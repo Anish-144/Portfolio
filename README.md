@@ -27,6 +27,16 @@ While testing, these are useful:
 - Turning on your OS "reduce motion" setting shows the static variant.
 - Development builds show dashed amber **DEV** notes beside content that still needs confirmation. Production builds never render them.
 
+## Deploy on Render
+
+The repository includes a Render Blueprint (`render.yaml`) and pins Node 22 (`.node-version`).
+
+1. In Render, choose **New → Blueprint** and select this repository.
+2. Accept the defaults. The build command is `npm ci && npm run build` and the publish directory is `dist`.
+3. Every push to `main` redeploys automatically.
+
+If you create a plain **Static Site** instead of a Blueprint, enter that build command and publish directory yourself. No rewrite rules are needed: in-page links and case-study links use `#` URLs.
+
 ## Editing content
 
 All personal information lives in `src/content/`:

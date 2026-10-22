@@ -1,0 +1,23 @@
+# Render Blueprint: deploys the portfolio as a static site.
+# In Render: New → Blueprint → select this repository.
+services:
+  - type: web
+    name: anish-patel-portfolio
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    headers:
+      # Hashed build assets never change, so browsers may cache them for good.
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      # The page itself is always revalidated, so new deploys show up at once.
+      - path: /index.html
+        name: Cache-Control
+        value: no-cache
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
