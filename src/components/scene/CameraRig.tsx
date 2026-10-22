@@ -1,11 +1,9 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { MathUtils, type PerspectiveCamera } from 'three';
 import { easeOutQuart, lerp, segment } from '../../animation/easing';
-import { setSceneSpot, type MotionState } from '../../animation/motion';
+import { setCallout, setSceneSpot, type MotionState } from '../../animation/motion';
 import type { SceneClock } from './sceneClock';
 
-/** World-space radius the camera frames to fill the station's framing circle. */
-export const FIT_RADIUS = 3.55;
 const REST_ELEVATION = 0.07;
 
 interface CameraRigProps {
@@ -34,7 +32,8 @@ export function CameraRig({ clock, motion }: CameraRigProps) {
     const stageSize = Math.max(journey.size, 160);
 
     const tanHalfFov = Math.tan(MathUtils.degToRad(camera.fov / 2));
-    const distance = ((FIT_RADIUS * height) / (stageSize * tanHalfFov)) * lerp(1.55, 1, intro);
+    // Each station frames its own featured component: the teardown zooms in and out.
+    const distance = ((journey.fit * height) / (stageSize * tanHalfFov)) * lerp(1.55, 1, intro);
     const azimuth = lerp(-0.8, 0, intro) + journey.yaw + clock.pointerX * 0.05;
     const elevation = lerp(0.38, REST_ELEVATION, intro) + journey.pitch + clock.pointerY * 0.035;
 
@@ -50,6 +49,16 @@ export function CameraRig({ clock, motion }: CameraRigProps) {
 
     // Keep the CSS light falloff behind the sculpture.
     setSceneSpot(motion, centerX, centerY, stageSize);
+
+    // A world radius r at the origin projects to r · stageSize / (2 · fit) pixels.
+    setCallout(motion, {
+      x: centerX,
+      y: centerY,
+      ring: (stageSize / 2) * (journey.focus / journey.fit),
+      opacity: journey.calloutOpacity,
+      part: journey.callout ? journey.stationId : '',
+      direction: journey.callout ?? '',
+    });
   });
 
   return null;

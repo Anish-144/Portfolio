@@ -47,8 +47,8 @@ export function NetworkLattice({ clock, materials, quality }: PartProps) {
     () =>
       buildNetwork({
         count: quality.nodeCount,
-        innerRadius: 3.15,
-        outerRadius: 3.6,
+        innerRadius: 3.4,
+        outerRadius: 3.85,
         neighbors: 2,
         maxEdgeLength: 2.4,
       }),

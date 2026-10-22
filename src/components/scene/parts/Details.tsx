@@ -23,6 +23,7 @@ import {
   type Mesh,
 } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { createMachinedRing } from '../geometry';
 import { TAU, clamp01, easeInOutSine, easeOutCubic, lerp } from '../../../animation/easing';
 import { AMBER } from '../materials';
 import { useDisposable } from '../useDisposable';
@@ -86,7 +87,7 @@ const PACKET_TAIL = 6;
  * A ring of memory blocks between the fin ring and the gear race. Amber
  * packets chase around it; stations set how busy it is.
  */
-export function DataBus({ clock, quality }: PartProps) {
+export function DataBus({ clock, materials, quality }: PartProps) {
   const spin = useRef<Group>(null);
   const blocks = useRef<InstancedMesh>(null);
   const count = quality.busCount;
@@ -94,8 +95,10 @@ export function DataBus({ clock, quality }: PartProps) {
     () => ({
       block: new BoxGeometry(0.075, 0.032, 0.045),
       material: new MeshBasicMaterial({ color: '#ffffff', toneMapped: false }),
+      // Machined race the memory blocks are mounted on.
+      mount: createMachinedRing({ inner: 2.385, outer: 2.455, depth: 0.016, chamfer: 0.004 }, quality.radialSegments),
     }),
-    [],
+    [quality.radialSegments],
   );
   const palette = useMemo(() => ({ off: new Color('#24272c'), on: new Color(AMBER), mix: new Color() }), []);
 
@@ -133,6 +136,7 @@ export function DataBus({ clock, quality }: PartProps) {
   return (
     <group ref={spin}>
       <instancedMesh ref={blocks} args={[resources.block, resources.material, count]} />
+      <mesh geometry={resources.mount} material={materials.gunmetal} position-z={-0.031} />
     </group>
   );
 }
@@ -141,7 +145,8 @@ export function DataBus({ clock, quality }: PartProps) {
 
 const CONDUIT_INNER = 1.9;
 const CONDUIT_OUTER = 2.32;
-const CONDUIT_BACK = -0.16;
+/** Behind the stator frame, which the loops are mounted to. */
+const CONDUIT_BACK = -0.33;
 
 const polar = (radius: number, angle: number, z: number) =>
   new Vector3(Math.cos(angle) * radius, Math.sin(angle) * radius, z);

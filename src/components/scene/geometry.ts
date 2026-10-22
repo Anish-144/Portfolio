@@ -1,4 +1,14 @@
-import { BufferGeometry, LatheGeometry, Shape, ShapeGeometry, Vector2 } from 'three';
+import {
+  BoxGeometry,
+  BufferAttribute,
+  BufferGeometry,
+  CylinderGeometry,
+  LatheGeometry,
+  Shape,
+  ShapeGeometry,
+  TorusGeometry,
+  Vector2,
+} from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { TAU } from '../../animation/easing';
 
@@ -184,4 +194,93 @@ export function createShellCap({ outer, inner, gap }: ShellProfile, radialSegmen
   // Duplicated rim points keep the machined lip crisp.
   const points = [...innerArc, rimInner.clone(), rimOuter.clone(), ...outerArc];
   return new LatheGeometry(points, radialSegments);
+}
+
+/**
+ * A knurled boss for the shell's poles: a flange that seats into the curved
+ * shell, a drum cut into fine ribs, and a chamfered cap. Axis on +Y.
+ */
+export function createCrown(radialSegments: number): BufferGeometry {
+  const points = [
+    new Vector2(0.001, -0.04),
+    new Vector2(0.2, -0.04),
+    new Vector2(0.2, 0),
+    new Vector2(0.15, 0),
+  ];
+  const ribs = 5;
+  for (let rib = 0; rib < ribs; rib++) {
+    const y = 0.008 + rib * 0.012;
+    points.push(new Vector2(0.15, y), new Vector2(0.138, y + 0.006));
+  }
+  points.push(new Vector2(0.15, 0.07), new Vector2(0.12, 0.09), new Vector2(0.001, 0.09));
+  return new LatheGeometry(hardEdged(points, false), radialSegments);
+}
+
+/** Thin chrome ribs running down a spherical cap from near the pole to near the rim. */
+export function createMeridianRibs(
+  radius: number,
+  tube: number,
+  count: number,
+  polarStart: number,
+  polarEnd: number,
+): BufferGeometry {
+  const arc = polarEnd - polarStart;
+  const ribs = Array.from({ length: count }, (_, index) =>
+    new TorusGeometry(radius, tube, 6, 36, arc)
+      // The arc starts on +X; swing it so it spans the polar range measured from +Y.
+      .rotateZ(Math.PI / 2 - polarEnd)
+      .rotateY((index / count) * TAU),
+  );
+  return merge(ribs);
+}
+
+/** A spur gear facing +Z: disk, raised hub, and square-cut teeth. */
+export function createSpurGear(pitchRadius: number, teeth: number, width: number): BufferGeometry {
+  const toothDepth = pitchRadius * 0.24;
+  const parts: BufferGeometry[] = [
+    new CylinderGeometry(pitchRadius, pitchRadius, width, 40).rotateX(Math.PI / 2),
+    new CylinderGeometry(pitchRadius * 0.34, pitchRadius * 0.34, width * 1.7, 20).rotateX(Math.PI / 2),
+  ];
+  for (let tooth = 0; tooth < teeth; tooth++) {
+    parts.push(
+      new BoxGeometry(toothDepth, ((TAU * pitchRadius) / teeth) * 0.5, width)
+        .translate(pitchRadius + toothDepth / 2 - 0.004, 0, 0)
+        .rotateZ((tooth / teeth) * TAU),
+    );
+  }
+  return merge(parts);
+}
+
+/**
+ * A flat annulus facing +Z whose UVs wrap around it: u runs clockwise (so text
+ * reads left-to-right across the top), v runs from the inner to the outer edge.
+ */
+export function createAnnulusStrip(inner: number, outer: number, segments: number): BufferGeometry {
+  const positions: number[] = [];
+  const uvs: number[] = [];
+  const normals: number[] = [];
+  const indices: number[] = [];
+  for (let step = 0; step <= segments; step++) {
+    const t = step / segments;
+    const angle = t * TAU;
+    for (const [radius, v] of [
+      [inner, 0],
+      [outer, 1],
+    ] as const) {
+      positions.push(Math.cos(angle) * radius, Math.sin(angle) * radius, 0);
+      uvs.push(1 - t, v);
+      normals.push(0, 0, 1);
+    }
+    if (step < segments) {
+      const a = step * 2;
+      // Counter-clockwise seen from +Z, so the face points at the camera.
+      indices.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+    }
+  }
+  const geometry = new BufferGeometry();
+  geometry.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3));
+  geometry.setAttribute('normal', new BufferAttribute(new Float32Array(normals), 3));
+  geometry.setAttribute('uv', new BufferAttribute(new Float32Array(uvs), 2));
+  geometry.setIndex(indices);
+  return geometry;
 }

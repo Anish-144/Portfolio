@@ -13,6 +13,9 @@ export interface QualitySettings {
   busCount: number;
   streamCount: number;
   conduitCount: number;
+  bearingBalls: number;
+  statorCount: number;
+  raceBolts: number;
 }
 
 const HIGH: QualitySettings = {
@@ -27,6 +30,9 @@ const HIGH: QualitySettings = {
   busCount: 72,
   streamCount: 220,
   conduitCount: 6,
+  bearingBalls: 22,
+  statorCount: 40,
+  raceBolts: 24,
 };
 
 const LOW: QualitySettings = {
@@ -41,6 +47,9 @@ const LOW: QualitySettings = {
   busCount: 48,
   streamCount: 90,
   conduitCount: 4,
+  bearingBalls: 22,
+  statorCount: 28,
+  raceBolts: 16,
 };
 
 /** Picked once per session: phones and low-core devices get lighter geometry and materials. */

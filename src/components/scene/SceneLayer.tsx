@@ -1,6 +1,7 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import type { MotionState, SceneMode } from '../../animation/motion';
 import { usePrefersReducedMotion } from '../../hooks/useMediaQuery';
+import { BreakdownCallout } from './BreakdownCallout';
 import { SceneFallback } from './SceneFallback';
 import { WebGLErrorBoundary } from './WebGLErrorBoundary';
 import './SceneLayer.css';
@@ -93,6 +94,7 @@ export function SceneLayer({ motion, mode, onFallback }: SceneLayerProps) {
         <SceneFallback motion={motion} />
       )}
       <div className="scene-layer__vignette" />
+      {mode === 'webgl' ? <BreakdownCallout /> : null}
       <div className="scene-layer__grain" />
     </div>
   );

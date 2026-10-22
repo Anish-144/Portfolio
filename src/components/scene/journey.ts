@@ -1,19 +1,29 @@
-import { clamp01, easeInOutCubic, lerp } from '../../animation/easing';
+import { clamp01, easeInOutCubic, lerp, smoothstep } from '../../animation/easing';
 import type { SectionPosition, StageMetrics } from '../../animation/motion';
 import type { SectionId } from '../../config/site';
 
 /**
- * The sculpture travels with the reader. Each section has a station: where
- * the sculpture sits, how it is seen, and how much it is pulled apart. While a
- * section is entering the viewport the scene blends from the previous station
- * to this one, so every scroll between sections moves it differently.
+ * The sculpture travels with the reader as a teardown. Each section has a
+ * station: which components are on stage, where they sit, how they are seen
+ * and framed. While a section enters the viewport the scene blends from the
+ * previous station to this one: components leave along the assembly axis or
+ * expand away, the camera reframes on what remains, and a technical callout
+ * labels it once the section has arrived.
  */
 
-/** Where the sculpture is framed. Viewport anchors are fractions of the viewport. */
+/** Components that can be isolated, innermost to outermost. */
+export const PART_KEYS = ['core', 'segments', 'turbine', 'bus', 'gear', 'dial', 'scanner', 'network'] as const;
+export type PartKey = (typeof PART_KEYS)[number];
+export type PartPresence = Record<PartKey, number>;
+
+/** Where the framing circle sits. Viewport anchors are fractions of the viewport. */
 export type Anchor =
   | { kind: 'hero' }
   | { kind: 'contact' }
   | { kind: 'viewport'; x: number; y: number; size: number };
+
+/** Which way a station's callout leader runs from the dimension ring. */
+export type CalloutDirection = 'ne' | 'nw' | 'se' | 'sw' | 'e' | 'w';
 
 export interface Pose {
   /** 0 assembled → 1 fully exploded technical view. */
@@ -36,12 +46,20 @@ export interface Pose {
   flow: number;
   /** Activity of the data-bus ring's travelling packets, 0–1. */
   bus: number;
+  /** World radius framed by the anchor's circle (smaller = zoomed in). */
+  fit: number;
+  /** World radius of the featured component (the dimension ring hugs it). */
+  focus: number;
 }
 
 export interface Station {
   id: SectionId;
   anchor: Anchor;
   pose: Pose;
+  /** Components on stage (1) or away (0); unspecified parts are away. */
+  parts: PartPresence;
+  /** Shows a labelled callout once the section has arrived. */
+  callout?: CalloutDirection;
 }
 
 export interface JourneyFrame extends Pose {
@@ -49,9 +67,16 @@ export interface JourneyFrame extends Pose {
   x: number;
   y: number;
   size: number;
-  /** Index of the station the frame is (mostly) at. */
+  parts: PartPresence;
+  /** Index and id of the station the frame is (mostly) at. */
   station: number;
+  stationId: SectionId;
+  /** Callout for the station being arrived at, and how visible it is (0–1). */
+  callout: CalloutDirection | null;
+  calloutOpacity: number;
 }
+
+const WHOLE = 3.55;
 
 const pose = (values: Partial<Pose>): Pose => ({
   explode: 0,
@@ -65,74 +90,100 @@ const pose = (values: Partial<Pose>): Pose => ({
   aperture: 1,
   flow: 0,
   bus: 0.5,
+  fit: WHOLE,
+  focus: WHOLE,
   ...values,
 });
 
-/* Wide layouts: alternate sides, change scale and viewpoint, so every hand-off reads as a move. */
+const only = (...keys: PartKey[]): PartPresence =>
+  Object.fromEntries(PART_KEYS.map((key) => [key, keys.includes(key) ? 1 : 0])) as PartPresence;
+
+const ALL = only(...PART_KEYS);
+
+/* Wide layouts: each section isolates one component in the free space beside its heading. */
 const WIDE: readonly Station[] = [
-  { id: 'top', anchor: { kind: 'hero' }, pose: pose({}) },
+  { id: 'top', anchor: { kind: 'hero' }, pose: pose({}), parts: ALL },
   {
-    // Lifts to the upper right, turning side-on above the statement.
+    // Part 01: the core unit alone, shell parted, upper right beside the title.
     id: 'about',
-    anchor: { kind: 'viewport', x: 0.86, y: 0.3, size: 0.8 },
-    pose: pose({ aperture: 0.75, flow: 0.25, bus: 0.6, explode: 0.3, yaw: 0.85, pitch: -0.08, tilt: 0.25, turn: 0.35, level: 0.55, opacity: 0.42, tempo: 0.8 }),
+    anchor: { kind: 'viewport', x: 0.8, y: 0.34, size: 0.56 },
+    pose: pose({ explode: 0.45, yaw: 0.6, pitch: -0.05, tilt: 0.2, turn: 0.5, level: 0.75, opacity: 0.8, aperture: 0.7, bus: 0.6, tempo: 0.8, fit: 1.3, focus: 1.08 }),
+    parts: only('core'),
+    callout: 'sw',
   },
   {
-    // Crosses to the left, kept inside the timeline's date column.
+    // Part 02: the indexing ring, stepping like a timeline, upper left above the heading.
     id: 'experience',
-    anchor: { kind: 'viewport', x: -0.02, y: 0.55, size: 0.78 },
-    pose: pose({ aperture: 0.55, flow: 0.35, bus: 1, explode: 0.65, yaw: -0.7, pitch: 0.22, tilt: -0.25, turn: -0.45, level: 0.5, opacity: 0.4 }),
+    anchor: { kind: 'viewport', x: 0.2, y: 0.255, size: 0.39 },
+    pose: pose({ yaw: -0.55, pitch: 0.2, tilt: -0.2, turn: -0.4, level: 0.7, opacity: 0.75, fit: 1.9, focus: 1.7 }),
+    parts: only('segments'),
+    callout: 'e',
   },
   {
-    // Recedes to the center as an exploded technical view, seen between the cards.
+    // Part 03: every component back, pulled apart into the full exploded view, top center.
     id: 'projects',
-    anchor: { kind: 'viewport', x: 0.52, y: 0.5, size: 0.62 },
-    pose: pose({ aperture: 1, flow: 1, bus: 0.8, explode: 1, yaw: 1.45, pitch: 0.12, tilt: 0.55, turn: 0.15, level: 0.5, opacity: 0.42, tempo: 1.4 }),
+    anchor: { kind: 'viewport', x: 0.6, y: 0.31, size: 0.55 },
+    pose: pose({ explode: 1, yaw: 1.45, pitch: 0.12, tilt: 0.55, turn: 0.15, level: 0.55, opacity: 0.55, flow: 1, bus: 0.8, tempo: 1.4, fit: 3.9, focus: 3.5 }),
+    parts: ALL,
+    callout: 'w',
   },
   {
-    // Sinks to the lower right, mostly behind the skills grid.
+    // Part 04: the turbine stage with its data bus, upper left above the heading.
     id: 'skills',
-    anchor: { kind: 'viewport', x: 0.95, y: 0.66, size: 0.95 },
-    pose: pose({ aperture: 0.5, flow: 0.1, bus: 0.35, explode: 0.15, yaw: -1.05, pitch: -0.18, tilt: -0.3, turn: 0.75, level: 0.5, opacity: 0.36, tempo: 0.9 }),
+    anchor: { kind: 'viewport', x: 0.2, y: 0.265, size: 0.36 },
+    pose: pose({ explode: 0.25, yaw: -0.55, pitch: -0.12, tilt: -0.15, turn: 0.35, level: 0.75, opacity: 0.8, flow: 0.15, bus: 1, tempo: 0.9, fit: 2.5, focus: 2.46 }),
+    parts: only('turbine', 'bus'),
+    callout: 'e',
   },
   {
-    // Rises into the open space beside the title, reassembling for the finale.
+    // Part 05: the instrument gimbals, large on the right (this section has no intro),
+    // turned so the engraved gear face and pinions read.
     id: 'achievements',
-    anchor: { kind: 'viewport', x: 0.8, y: 0.3, size: 0.6 },
-    pose: pose({ aperture: 0.06, flow: 0.5, bus: 0.9, explode: 0.45, yaw: 0.35, pitch: 0.32, tilt: 0.35, turn: -0.3, level: 0.55, opacity: 0.45 }),
+    anchor: { kind: 'viewport', x: 0.73, y: 0.42, size: 0.62 },
+    pose: pose({ explode: 0.1, yaw: 0.25, pitch: 0.12, tilt: -0.95, turn: -0.2, level: 0.75, opacity: 0.8, aperture: 0.06, flow: 0.2, bus: 0.9, fit: 3.32, focus: 3.24 }),
+    parts: only('gear', 'dial'),
+    callout: 'w',
   },
-  { id: 'contact', anchor: { kind: 'contact' }, pose: pose({ yaw: 0.6, pitch: 0.12, flow: 0.35, bus: 0.6 }) },
+  { id: 'contact', anchor: { kind: 'contact' }, pose: pose({ yaw: 0.6, pitch: 0.12, flow: 0.35, bus: 0.6 }), parts: ALL },
 ];
 
-/* Narrow layouts: text spans the width, so the sculpture keeps to the edges and stays quieter. */
+/*
+ * Narrow layouts: the same teardown, each part in the free band above its
+ * section heading (alternating sides). Callouts are hidden in CSS.
+ */
 const COMPACT: readonly Station[] = [
-  { id: 'top', anchor: { kind: 'hero' }, pose: pose({}) },
+  { id: 'top', anchor: { kind: 'hero' }, pose: pose({}), parts: ALL },
   {
     id: 'about',
-    anchor: { kind: 'viewport', x: 0.9, y: 0.2, size: 0.72 },
-    pose: pose({ aperture: 0.75, flow: 0.25, bus: 0.6, explode: 0.3, yaw: 0.85, tilt: 0.25, level: 0.5, opacity: 0.34, tempo: 0.8 }),
+    anchor: { kind: 'viewport', x: 0.8, y: 0.2, size: 0.48 },
+    pose: pose({ explode: 0.45, yaw: 0.6, tilt: 0.2, turn: 0.5, level: 0.7, opacity: 0.65, aperture: 0.7, tempo: 0.8, fit: 1.3, focus: 1.08 }),
+    parts: only('core'),
   },
   {
     id: 'experience',
-    anchor: { kind: 'viewport', x: 0.06, y: 0.72, size: 0.8 },
-    pose: pose({ aperture: 0.55, flow: 0.35, bus: 1, explode: 0.65, yaw: -0.7, pitch: 0.22, turn: -0.45, level: 0.45, opacity: 0.3 }),
+    anchor: { kind: 'viewport', x: 0.22, y: 0.2, size: 0.48 },
+    pose: pose({ yaw: -0.55, pitch: 0.2, tilt: -0.2, turn: -0.4, level: 0.7, opacity: 0.65, fit: 1.9, focus: 1.7 }),
+    parts: only('segments'),
   },
   {
     id: 'projects',
-    anchor: { kind: 'viewport', x: 0.5, y: 0.5, size: 0.62 },
-    pose: pose({ aperture: 1, flow: 1, bus: 0.8, explode: 1, yaw: 1.45, tilt: 0.55, level: 0.45, opacity: 0.3, tempo: 1.4 }),
+    anchor: { kind: 'viewport', x: 0.6, y: 0.2, size: 0.56 },
+    pose: pose({ explode: 1, yaw: 1.45, tilt: 0.55, level: 0.55, opacity: 0.55, flow: 1, bus: 0.8, tempo: 1.4, fit: 3.9, focus: 3.5 }),
+    parts: ALL,
   },
   {
     id: 'skills',
-    anchor: { kind: 'viewport', x: 0.94, y: 0.7, size: 0.8 },
-    pose: pose({ aperture: 0.5, flow: 0.1, bus: 0.35, explode: 0.15, yaw: -1.05, turn: 0.75, level: 0.45, opacity: 0.3, tempo: 0.9 }),
+    anchor: { kind: 'viewport', x: 0.8, y: 0.2, size: 0.5 },
+    pose: pose({ explode: 0.2, yaw: -1.0, pitch: -0.15, turn: 0.7, level: 0.7, opacity: 0.65, flow: 0.15, bus: 1, tempo: 0.9, fit: 2.5, focus: 2.46 }),
+    parts: only('turbine', 'bus'),
   },
   {
     id: 'achievements',
-    anchor: { kind: 'viewport', x: 0.9, y: 0.22, size: 0.62 },
-    pose: pose({ aperture: 0.06, flow: 0.5, bus: 0.9, explode: 0.45, yaw: 0.35, pitch: 0.32, level: 0.5, opacity: 0.34 }),
+    anchor: { kind: 'viewport', x: 0.22, y: 0.2, size: 0.52 },
+    pose: pose({ explode: 0.1, yaw: 0.25, pitch: 0.12, tilt: -0.95, level: 0.7, opacity: 0.65, aperture: 0.06, flow: 0.2, bus: 0.9, fit: 3.32, focus: 3.24 }),
+    parts: only('gear', 'dial'),
   },
-  { id: 'contact', anchor: { kind: 'contact' }, pose: pose({ yaw: 0.6, pitch: 0.12, flow: 0.35, bus: 0.6 }) },
+  { id: 'contact', anchor: { kind: 'contact' }, pose: pose({ yaw: 0.6, pitch: 0.12, flow: 0.35, bus: 0.6 }), parts: ALL },
 ];
 
 export const stationsFor = (width: number, height: number): readonly Station[] =>
@@ -140,6 +191,9 @@ export const stationsFor = (width: number, height: number): readonly Station[] =
 
 /** A station is fully reached once its section's top is this far down the viewport. */
 const ARRIVAL = 0.25;
+/** Callouts fade out over this span of further scrolling (fractions of the viewport). */
+const CALLOUT_HOLD = 0.3;
+const CALLOUT_GONE = 0.75;
 
 interface JourneyContext {
   width: number;
@@ -161,6 +215,8 @@ function resolve(anchor: Anchor, { width, height, scrollY, hero, contact }: Jour
   }
 }
 
+const POSE_KEYS = Object.keys(pose({})) as Array<keyof Pose>;
+
 /**
  * Blends between stations for a (smoothed) scroll position. With `snap`, the
  * frame jumps straight to the current station (reduced motion).
@@ -175,6 +231,7 @@ export function sampleJourney(
   let from = 0;
   let to = 0;
   let t = 1;
+  let sinceArrival = Number.POSITIVE_INFINITY;
 
   for (let index = 1; index < stations.length; index++) {
     const station = stations[index];
@@ -186,10 +243,15 @@ export function sampleJourney(
     from = to;
     to = index;
     t = clamp01((travel - start) / (end - start));
+    sinceArrival = travel - end;
   }
 
+  let snappedBack = false;
   if (snap) {
-    if (t < 0.5) to = from;
+    if (t < 0.5) {
+      to = from;
+      snappedBack = true;
+    }
     t = 1;
   }
 
@@ -200,25 +262,34 @@ export function sampleJourney(
   const w = easeInOutCubic(t);
   const pa = resolve(a.anchor, context);
   const pb = resolve(b.anchor, context);
-  const blend = (key: keyof Pose) => lerp(a.pose[key], b.pose[key], w);
+
+  const blended = Object.fromEntries(POSE_KEYS.map((key) => [key, lerp(a.pose[key], b.pose[key], w)])) as unknown as Pose;
+  const parts = Object.fromEntries(PART_KEYS.map((key) => [key, lerp(a.parts[key], b.parts[key], w)])) as PartPresence;
+
+  const fade = 1 - smoothstep(context.height * CALLOUT_HOLD, context.height * CALLOUT_GONE, Math.max(0, sinceArrival));
+  const calloutOpacity = b.callout && !snappedBack ? smoothstep(0.8, 1, t) * fade : 0;
 
   return {
+    ...blended,
     x: lerp(pa.x, pb.x, w),
     y: lerp(pa.y, pb.y, w),
     size: lerp(pa.size, pb.size, w),
-    explode: blend('explode'),
-    yaw: blend('yaw'),
-    pitch: blend('pitch'),
-    tilt: blend('tilt'),
-    turn: blend('turn'),
-    level: blend('level'),
-    opacity: blend('opacity'),
-    tempo: blend('tempo'),
-    aperture: blend('aperture'),
-    flow: blend('flow'),
-    bus: blend('bus'),
+    parts,
     station: w < 0.5 ? from : to,
+    stationId: (w < 0.5 ? a : b).id,
+    callout: b.callout ?? null,
+    calloutOpacity,
   };
 }
 
-export const restingFrame = (): JourneyFrame => ({ ...pose({}), x: 0, y: 0, size: 600, station: 0 });
+export const restingFrame = (): JourneyFrame => ({
+  ...pose({}),
+  x: 0,
+  y: 0,
+  size: 600,
+  parts: ALL,
+  station: 0,
+  stationId: 'top',
+  callout: null,
+  calloutOpacity: 0,
+});

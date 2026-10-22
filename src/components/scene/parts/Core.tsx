@@ -11,7 +11,7 @@ import {
   type PointLight,
 } from 'three';
 import { TAU } from '../../../animation/easing';
-import { createShellCap } from '../geometry';
+import { createCrown, createMeridianRibs, createShellCap } from '../geometry';
 import { AMBER, type SculptureMaterials } from '../materials';
 import { useDisposable } from '../useDisposable';
 import { layoutInstances, type PartProps } from './shared';
@@ -23,13 +23,19 @@ const BOLT_COUNT = 12;
 const BOLT_POLAR = Math.PI / 2 - SHELL.gap - 0.12;
 const UP = new Vector3(0, 1, 0);
 
+/** Where the knurled crown seats on the pole (slightly sunk into the shell). */
+const CROWN_SEAT = SHELL.outer - 0.005;
+
 interface CapGeometry {
   shell: BufferGeometry;
   lip: BufferGeometry;
   bolt: BufferGeometry;
+  ribs: BufferGeometry;
+  crown: BufferGeometry;
+  pin: BufferGeometry;
 }
 
-/** One blackened hemisphere with a chrome lip and a ring of hex bolts. */
+/** One blackened hemisphere with chrome meridian ribs, a lip, a bolt ring and a knurled pole crown. */
 function CoreCap({ geometry, materials }: { geometry: CapGeometry; materials: SculptureMaterials }) {
   const bolts = useRef<InstancedMesh>(null);
 
@@ -48,8 +54,11 @@ function CoreCap({ geometry, materials }: { geometry: CapGeometry; materials: Sc
   return (
     <>
       <mesh geometry={geometry.shell} material={materials.blackened} />
+      <mesh geometry={geometry.ribs} material={materials.chrome} />
       <mesh geometry={geometry.lip} material={materials.chrome} position-y={RIM_HEIGHT} />
       <instancedMesh ref={bolts} args={[geometry.bolt, materials.chrome, BOLT_COUNT]} />
+      <mesh geometry={geometry.crown} material={materials.steel} position-y={CROWN_SEAT} />
+      <mesh geometry={geometry.pin} material={materials.amber} position-y={CROWN_SEAT + 0.1} />
     </>
   );
 }
@@ -64,6 +73,8 @@ export function Core({ clock, materials, quality }: PartProps) {
   const top = useRef<Group>(null);
   const bottom = useRef<Group>(null);
   const light = useRef<PointLight>(null);
+  const gyroA = useRef<Group>(null);
+  const gyroB = useRef<Group>(null);
 
   const geometry = useDisposable(
     () => ({
@@ -72,6 +83,10 @@ export function Core({ clock, materials, quality }: PartProps) {
         Math.PI / 2,
       ),
       bolt: new CylinderGeometry(0.021, 0.021, 0.02, 6),
+      ribs: createMeridianRibs(SHELL.outer + 0.003, 0.0065, 8, 0.3, Math.PI / 2 - SHELL.gap - 0.17),
+      crown: createCrown(Math.round(quality.radialSegments / 2)),
+      pin: new SphereGeometry(0.024, 14, 10),
+      gyro: new TorusGeometry(0.667, 0.0055, 6, 96),
       sphere: new SphereGeometry(0.6, 64, 48),
       filament: new TorusGeometry(0.645, 0.016, 12, quality.radialSegments).rotateX(Math.PI / 2),
     }),
@@ -84,6 +99,9 @@ export function Core({ clock, materials, quality }: PartProps) {
     if (top.current) top.current.position.y = open;
     if (bottom.current) bottom.current.position.y = -open;
     if (light.current) light.current.intensity = 6 * clock.power;
+    // Inner gyroscope: two hairline rings tumbling on crossed axes inside the shell.
+    if (gyroA.current) gyroA.current.rotation.y = clock.time * 0.6;
+    if (gyroB.current) gyroB.current.rotation.x = clock.time * 0.45;
   });
 
   const cap = { geometry, materials };
@@ -92,6 +110,12 @@ export function Core({ clock, materials, quality }: PartProps) {
     <group>
       <mesh geometry={geometry.sphere} material={materials.obsidian} />
       <mesh geometry={geometry.filament} material={materials.amber} />
+      <group ref={gyroA}>
+        <mesh geometry={geometry.gyro} material={materials.chrome} />
+        <group ref={gyroB} rotation-y={Math.PI / 2}>
+          <mesh geometry={geometry.gyro} material={materials.steel} scale={0.985} />
+        </group>
+      </group>
       <pointLight ref={light} color={AMBER} intensity={0} distance={3.6} decay={2} />
       <group ref={spin}>
         <group ref={top}>

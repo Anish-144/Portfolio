@@ -1,9 +1,13 @@
 import {
   Color,
+  DataTexture,
+  LinearFilter,
+  LinearMipmapLinearFilter,
   LineBasicMaterial,
   MeshBasicMaterial,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
+  RepeatWrapping,
 } from 'three';
 import type { QualityTier } from './quality';
 
@@ -26,6 +30,40 @@ export interface SculptureMaterials {
 
 interface MetalOptions {
   anisotropy?: number;
+  /** Apply the turned-metal grain (roughness varies in fine bands). */
+  grain?: boolean;
+}
+
+/**
+ * Turned-metal grain: a column of fine, random roughness bands. Lathe parts
+ * run their v coordinate along the profile, so the bands land as concentric
+ * rings on faces and as tool marks on walls, the way machined stock looks.
+ */
+function createGrainTexture(): DataTexture {
+  const height = 256;
+  const width = 4;
+  const data = new Uint8Array(width * height * 4);
+  let seed = 9277;
+  const random = () => {
+    seed = (seed * 16807) % 2147483647;
+    return seed / 2147483647;
+  };
+  for (let y = 0; y < height; y++) {
+    // Mostly mid values with occasional brighter "cut" lines.
+    const value = Math.round(255 * (0.62 + random() * 0.26 + (random() > 0.9 ? 0.12 : 0)));
+    for (let x = 0; x < width; x++) {
+      data.set([value, value, value, 255], (y * width + x) * 4);
+    }
+  }
+  const texture = new DataTexture(data, width, height);
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  texture.repeat.set(1, 6);
+  texture.magFilter = LinearFilter;
+  texture.minFilter = LinearMipmapLinearFilter;
+  texture.generateMipmaps = true;
+  texture.needsUpdate = true;
+  return texture;
 }
 
 /**
@@ -34,17 +72,21 @@ interface MetalOptions {
  */
 export function createSculptureMaterials(tier: QualityTier): SculptureMaterials {
   const physical = tier === 'high';
+  const grain = createGrainTexture();
 
   const metal = (color: string, roughness: number, options: MetalOptions = {}): MeshStandardMaterial => {
-    if (!physical) return new MeshStandardMaterial({ color, metalness: 1, roughness });
-    const material = new MeshPhysicalMaterial({ color, metalness: 1, roughness });
-    if (options.anisotropy) material.anisotropy = options.anisotropy;
+    const material = physical
+      ? new MeshPhysicalMaterial({ color, metalness: 1, roughness })
+      : new MeshStandardMaterial({ color, metalness: 1, roughness });
+    if (options.grain) material.roughnessMap = grain;
+    if (physical && options.anisotropy) (material as MeshPhysicalMaterial).anisotropy = options.anisotropy;
     return material;
   };
 
-  const chrome = metal('#e3e5e9', 0.14);
-  const steel = metal('#b2b7be', 0.3, { anisotropy: 0.6 });
-  const gunmetal = metal('#4a4e55', 0.3);
+  // Grained materials start rougher: the map scales roughness down to ~0.6–1.0 of it.
+  const chrome = metal('#e3e5e9', 0.18, { grain: true });
+  const steel = metal('#b2b7be', 0.38, { anisotropy: 0.6, grain: true });
+  const gunmetal = metal('#4a4e55', 0.37, { grain: true });
   const blackened = metal('#1c1e22', 0.4);
   const node = metal('#eceef1', 0.22);
 
@@ -77,6 +119,9 @@ export function createSculptureMaterials(tier: QualityTier): SculptureMaterials 
     setPower: (power) => {
       amber.color.copy(off).lerp(on, power);
     },
-    dispose: () => all.forEach((material) => material.dispose()),
+    dispose: () => {
+      all.forEach((material) => material.dispose());
+      grain.dispose();
+    },
   };
 }

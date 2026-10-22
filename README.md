@@ -68,26 +68,38 @@ src/
     ui/                    Section heading, CTA, tags, icons
 ```
 
-**One fixed 3D layer that travels with the reader.** The WebGL canvas sits fixed behind transparent sections. Every section has a *station* in `src/components/scene/journey.ts`. A station sets where the sculpture sits, its viewpoint and rotation, how far it is pulled apart, its brightness, opacity, and mechanical tempo. It also sets the iris aperture over the core, the density of the particle data stream, and how busy the data-bus ring is. As each section enters, the scene blends from the previous station using a smoothed scroll position, so every hand-off moves differently:
+**A teardown that travels with the reader.** The WebGL canvas sits fixed behind transparent sections. Every section has a *station* in `src/components/scene/journey.ts`. A station sets:
 
-- **Hero:** the sculpture sits on the hero stage.
-- **About:** it rises upper right.
-- **Experience:** it crosses into the left margin.
-- **Projects:** it shows a centred exploded view between the cards.
-- **Skills:** it sinks lower right.
-- **Achievements:** it moves beside the title.
-- **Contact:** it reassembles on the contact stage.
+- which components are on stage, and where they sit;
+- the camera framing (`fit`) and viewpoint;
+- how far apart the parts are pulled;
+- lighting, opacity, tempo, iris aperture, data-stream density, and data-bus activity.
+
+Between stations, departing components shrink back into depth along the assembly axis, and the arriving one grows out of it, like a product breakdown video:
+
+| Section | Component isolated |
+|---|---|
+| Hero | Full assembly |
+| About | Part 01: core unit, shell parted |
+| Experience | Part 02: indexing ring, stepping like a timeline |
+| Projects | Part 03: full exploded view |
+| Skills | Part 04: turbine stage with data bus |
+| Achievements | Part 05: instrument gimbals |
+| Contact | Reassembled |
+
+On wide screens, a callout (dimension ring, leader line, part label from `src/content/breakdown.ts`) appears as each section arrives and fades as you read on. Phones get the same teardown without callouts.
 
 The sculpture is built entirely in code:
 
-- a split core, ribbed collar and iris;
-- segmented rings with vent slots;
-- a turbine ring with coolant conduits;
-- a data-bus ring of memory blocks;
-- gear and dial gimbals;
-- a scanner orbit and a network lattice;
-- a GPU particle stream;
-- an amber pulse that marks each station arrival.
+- **Core:** split shell with chrome meridian ribs, knurled pole crowns with amber pins, an inner gyroscope, and a 10-blade iris;
+- **Indexing ring:** machined segments with vent slots and end bolts, riding on a 22-ball bearing whose cage turns at half speed;
+- **Turbine:** a rotor with bolt circles, a counter-rotating stator row on a spoked frame, and coolant loops;
+- **Data bus:** memory blocks on a machined mounting race;
+- **Gear gimbal:** pivot bearings, three pinions meshing at the true gear ratio, and an engraved inscription;
+- **Dial gimbal, scanner orbit and network lattice;**
+- **Effects:** a GPU particle stream and an amber pulse at each station arrival.
+
+Metal surfaces carry a turned-metal roughness grain.
 
 **360° rotation.** In the hero and contact sections the sculpture can be turned freely:
 

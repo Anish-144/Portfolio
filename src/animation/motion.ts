@@ -50,6 +50,8 @@ export interface MotionState {
   layer: HTMLElement | null;
   /** Last light-falloff position written to the layer. */
   spot: { x: number; y: number; size: number };
+  /** Last breakdown callout state written to the layer. */
+  callout: CalloutState;
   sceneReady: boolean;
   /** Replaced by the scene so DOM changes can request a frame in on-demand mode. */
   invalidate: () => void;
@@ -68,6 +70,7 @@ export function createMotionState(): MotionState {
     sections: [],
     layer: null,
     spot: { x: -1, y: -1, size: -1 },
+    callout: { x: -1, y: -1, ring: -1, opacity: -1, part: '', direction: '' },
     sceneReady: false,
     invalidate: () => {},
     readyListeners: new Set(),
@@ -103,6 +106,37 @@ export function setSceneSpot(motion: MotionState, x: number, y: number, size: nu
   layer.style.setProperty('--spot-x', `${x.toFixed(1)}px`);
   layer.style.setProperty('--spot-y', `${y.toFixed(1)}px`);
   layer.style.setProperty('--spot-size', `${size.toFixed(1)}px`);
+}
+
+/** Breakdown callout: dimension ring around the featured part plus a labelled leader. */
+export interface CalloutState {
+  /** Ring center and radius, viewport pixels. */
+  x: number;
+  y: number;
+  ring: number;
+  opacity: number;
+  /** Section whose label is shown, and the leader's direction. */
+  part: string;
+  direction: string;
+}
+
+/** Publishes the callout to the scene layer as CSS custom properties; skips no-op writes. */
+export function setCallout(motion: MotionState, next: CalloutState): void {
+  const layer = motion.layer;
+  const last = motion.callout;
+  if (!layer) return;
+  const moved =
+    Math.abs(last.x - next.x) > 0.5 || Math.abs(last.y - next.y) > 0.5 || Math.abs(last.ring - next.ring) > 0.5;
+  const faded = Math.abs(last.opacity - next.opacity) > 0.01 || (next.opacity === 0 && last.opacity !== 0);
+  if (moved || faded) {
+    layer.style.setProperty('--bd-x', `${next.x.toFixed(1)}px`);
+    layer.style.setProperty('--bd-y', `${next.y.toFixed(1)}px`);
+    layer.style.setProperty('--bd-r', `${next.ring.toFixed(1)}px`);
+    layer.style.setProperty('--bd-o', next.opacity.toFixed(3));
+  }
+  if (last.part !== next.part) layer.dataset.part = next.part;
+  if (last.direction !== next.direction) layer.dataset.direction = next.direction;
+  motion.callout = next;
 }
 
 export const MotionContext = createContext<MotionState | null>(null);
