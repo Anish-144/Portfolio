@@ -1,0 +1,67 @@
+.section-heading {
+  display: grid;
+  gap: clamp(18px, 2.4vw, 28px);
+  margin-bottom: clamp(48px, 7vw, 96px);
+}
+
+.section-heading__meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--c-ink-3);
+}
+
+.section-heading__index {
+  color: var(--c-amber);
+}
+
+.section-heading__rule {
+  width: 40px;
+  height: 1px;
+  background: var(--c-line-strong);
+}
+
+.section-heading__title {
+  max-width: 14em;
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 6.4vw, 6.75rem);
+  font-weight: 820;
+  font-stretch: 74%;
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.section-heading__intro {
+  max-width: 46ch;
+  font-size: clamp(15px, 0.45vw + 12px, 18px);
+  line-height: 1.6;
+  color: var(--c-ink-2);
+  text-wrap: pretty;
+}
+
+/* Wide screens: the intro answers the title from the right, aligned to its last line. */
+@media (min-width: 1000px) {
+  .section-heading {
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+    column-gap: clamp(40px, 6vw, 120px);
+    align-items: end;
+  }
+
+  .section-heading__meta {
+    grid-column: 1 / -1;
+  }
+
+  .section-heading__intro {
+    justify-self: end;
+    max-width: 38ch;
+    padding-bottom: 0.35em;
+  }
+}
+
+/* SplitText line masks: a little vertical room so glyphs aren't shaved. */
+.split-line {
+  padding-block: 0.04em;
+  margin-block: -0.04em;
+}

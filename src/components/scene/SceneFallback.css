@@ -1,0 +1,130 @@
+/*
+ * Static-first CSS sculpture; slow rotation only when motion is welcome.
+ * Masks use `closest-side` so percentages are fractions of each ring's radius.
+ */
+.scene-fallback {
+  --size: calc(var(--spot-size, 640px) * 0.92);
+  position: absolute;
+  left: var(--spot-x, 70%);
+  top: var(--spot-y, 50%);
+  width: var(--size);
+  height: var(--size);
+  transform: translate(-50%, -50%);
+  perspective: 1400px;
+}
+
+/* Inline copy (contact section): sized by its container, which sets `container-type: size`. */
+.scene-fallback--inline {
+  --size: 88cqmin;
+  left: 50%;
+  top: 50%;
+}
+
+.scene-fallback__tilt {
+  position: absolute;
+  inset: 0;
+  transform: rotateX(18deg) rotateY(-24deg);
+  transform-style: preserve-3d;
+}
+
+.scene-fallback__ring {
+  position: absolute;
+  border-radius: 50%;
+}
+
+/* Hairline instrument dial with graduations. */
+.scene-fallback__ring--dial {
+  inset: 0;
+  border: 1px solid rgb(214 218 224 / 0.36);
+  background: repeating-conic-gradient(rgb(200 205 212 / 0.55) 0 0.4deg, transparent 0.4deg 2.5deg);
+  mask:
+    radial-gradient(circle closest-side, transparent 94%, #000 94.3%, #000 97.5%, transparent 97.8%),
+    radial-gradient(circle closest-side, transparent 99.4%, #000 99.6%);
+}
+
+/* Toothed gear race: a brushed band with a fine tooth edge. */
+.scene-fallback__ring--gear {
+  inset: 9%;
+  background:
+    repeating-conic-gradient(#d7dade 0 1.1deg, #26292e 1.1deg 3deg) center / 100% 100%,
+    conic-gradient(from 210deg, #5d636b, #e2e4e8 16%, #767c85 32%, #24272c 52%, #b2b8bf 72%, #5d636b);
+  mask: radial-gradient(circle closest-side, transparent 88%, #000 88.4%);
+}
+
+.scene-fallback__ring--gear::after {
+  content: '';
+  position: absolute;
+  inset: 2.2%;
+  border-radius: 50%;
+  background: conic-gradient(from 210deg, #5d636b, #e2e4e8 16%, #767c85 32%, #24272c 52%, #b2b8bf 72%, #5d636b);
+  mask: radial-gradient(circle closest-side, transparent 92%, #000 92.4%);
+}
+
+/* Pitched fins between two races. */
+.scene-fallback__ring--fins {
+  inset: 18%;
+  background:
+    radial-gradient(circle closest-side, transparent 96%, #c3c7cd 96.5%),
+    radial-gradient(circle closest-side, #9aa0a8 0 79%, transparent 79.4%),
+    repeating-conic-gradient(#16181c 0 2.8deg, #8a9098 2.8deg 3.6deg, #16181c 3.6deg 5deg);
+  mask: radial-gradient(circle closest-side, transparent 76%, #000 76.4%);
+  animation: fallback-spin 140s linear infinite reverse;
+}
+
+/* Machined segments with gaps. */
+.scene-fallback__ring--segments {
+  inset: 29%;
+  background: conic-gradient(from 120deg, #8b9199, #eceef1 18%, #5e646c 42%, #c3c7cd 68%, #8b9199);
+  mask:
+    repeating-conic-gradient(#000 0 28deg, transparent 28deg 30deg),
+    radial-gradient(circle closest-side, transparent 74%, #000 74.4%);
+  mask-composite: intersect;
+  animation: fallback-spin 96s linear infinite;
+}
+
+/* Ribbed collar. */
+.scene-fallback__ring--collar {
+  inset: 37.5%;
+  background: repeating-radial-gradient(circle closest-side, #d0d3d8 0 1px, #5f656d 1px 3.5px);
+  mask: radial-gradient(circle closest-side, transparent 82%, #000 82.4%);
+}
+
+/* Dark split core with the amber slit. */
+.scene-fallback__core {
+  position: absolute;
+  inset: 41.5%;
+  border-radius: 50%;
+  background:
+    linear-gradient(
+      to bottom,
+      transparent calc(50% - 1.5px),
+      #ffa53d calc(50% - 1.5px),
+      #ffa53d calc(50% + 1.5px),
+      transparent calc(50% + 1.5px)
+    ),
+    linear-gradient(to bottom, transparent 45%, #050506 45%, #050506 55%, transparent 55%),
+    radial-gradient(circle at 34% 28%, #4a4e55 0, #1c1e22 38%, #060607 72%);
+  box-shadow:
+    0 0 0 1px rgb(224 228 233 / 0.32),
+    0 0 48px rgb(255 165 61 / 0.12);
+}
+
+.scene-fallback__orbit {
+  position: absolute;
+  inset: -3%;
+  border-radius: 50%;
+  border: 1px solid rgb(214 218 224 / 0.16);
+  transform: rotateX(72deg) rotateZ(24deg);
+}
+
+@keyframes fallback-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-fallback__ring {
+    animation: none !important;
+  }
+}

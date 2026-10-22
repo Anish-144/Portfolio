@@ -1,0 +1,297 @@
+.pvisual {
+  position: relative;
+  margin: 0;
+  border: 1px solid var(--c-line);
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 45%, rgb(170 178 192 / 0.06), transparent 70%),
+    linear-gradient(var(--c-line) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(90deg, var(--c-line) 1px, transparent 1px) 0 0 / 32px 32px,
+    #08090b;
+  background-blend-mode: normal;
+  overflow: hidden;
+}
+
+/* Corner registration ticks. */
+.pvisual::before,
+.pvisual::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--c-amber);
+  border-style: solid;
+  pointer-events: none;
+}
+
+.pvisual::before {
+  top: 8px;
+  left: 8px;
+  border-width: 1px 0 0 1px;
+}
+
+.pvisual::after {
+  right: 8px;
+  bottom: 8px;
+  border-width: 0 1px 1px 0;
+}
+
+.pvisual__canvas {
+  aspect-ratio: 640 / 440;
+}
+
+.pvisual__canvas svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.pvisual__caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--c-line);
+  background: rgb(6 7 8 / 0.6);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+}
+
+/* ------------------------------------------------------- SVG vocabulary */
+
+/* Strokes keep their pixel width at any scale, so lines stay crisp when small. */
+.v-line,
+.v-panel,
+.v-node,
+.v-ring {
+  vector-effect: non-scaling-stroke;
+}
+
+.v-line {
+  fill: none;
+  stroke: rgb(226 229 234 / 0.36);
+  stroke-width: 1.25;
+}
+
+.v-line--strong {
+  stroke: rgb(226 229 234 / 0.72);
+}
+
+.v-line--amber {
+  stroke: var(--c-amber);
+  stroke-width: 1.5;
+}
+
+.v-dash {
+  stroke-dasharray: 3 4;
+}
+
+.v-panel {
+  fill: rgb(12 13 15 / 0.96);
+  stroke: rgb(226 229 234 / 0.32);
+  stroke-width: 1;
+}
+
+.v-node {
+  fill: #121418;
+  stroke: rgb(226 229 234 / 0.66);
+  stroke-width: 1.25;
+}
+
+.v-node--active {
+  stroke: var(--c-amber);
+  stroke-width: 1.5;
+}
+
+/* Surface ring: keeps markers legible where they sit on lines. */
+.v-ring {
+  stroke: #08090b;
+  stroke-width: 2;
+}
+
+.v-fill-dim {
+  fill: rgb(226 229 234 / 0.2);
+}
+
+.v-fill-mid {
+  fill: rgb(226 229 234 / 0.5);
+}
+
+.v-fill-strong {
+  fill: rgb(226 229 234 / 0.88);
+}
+
+.v-fill-amber {
+  fill: var(--c-amber);
+}
+
+/* Meter track: a lighter step of the fill's own hue. */
+.v-track-amber {
+  fill: rgb(240 164 60 / 0.2);
+}
+
+/* Text always wears ink; amber lives on the marks beside it. */
+.v-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  fill: rgb(243 242 238 / 0.74);
+  text-transform: uppercase;
+}
+
+.v-label--strong {
+  fill: rgb(243 242 238 / 0.97);
+}
+
+.v-label--sm {
+  font-size: 10px;
+}
+
+/* -------------------------------------------------------------- Draw-in */
+
+.v-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1.1s var(--ease-out-expo) calc(var(--d, 0s) * 0.6);
+}
+
+.v-grow {
+  transform-box: fill-box;
+  transform-origin: left center;
+  transition: transform 1s var(--ease-out-expo) calc(var(--d, 0s) * 0.6);
+}
+
+.v-pop {
+  transition: opacity 0.6s ease calc(var(--d, 0s) * 0.6);
+}
+
+.pvisual[data-drawn='false'] .v-draw {
+  stroke-dashoffset: 1;
+  transition: none;
+}
+
+.pvisual[data-drawn='false'] .v-grow {
+  transform: scaleX(0);
+  transition: none;
+}
+
+.pvisual[data-drawn='false'] .v-pop,
+.pvisual[data-drawn='false'] .v-flow {
+  opacity: 0;
+  transition: none;
+}
+
+/* ------------------------------------------------------------ Animation */
+
+.v-flow {
+  stroke: var(--c-amber);
+  stroke-width: 1.75;
+  fill: none;
+  stroke-dasharray: 10 400;
+  stroke-dashoffset: 410;
+  animation: v-flow 3.2s linear infinite;
+}
+
+@keyframes v-flow {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.v-scan {
+  animation: v-scan 5.5s var(--ease-in-out) infinite alternate;
+}
+
+@keyframes v-scan {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(var(--scan-distance, 200px));
+  }
+}
+
+.v-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: v-pulse 2.6s ease-out infinite;
+}
+
+@keyframes v-pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+
+.v-bar {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  animation: v-bar 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes v-bar {
+  from {
+    transform: scaleY(0.25);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.v-dashmove {
+  stroke-dasharray: 10 14;
+  animation: v-dashmove 1.6s linear infinite;
+}
+
+@keyframes v-dashmove {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+.v-blink {
+  animation: v-blink 2.4s steps(2, jump-none) infinite;
+}
+
+@keyframes v-blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Only animate while on screen; never under reduced motion. */
+.pvisual[data-playing='false'] * {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pvisual * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .pvisual .v-draw {
+    stroke-dashoffset: 0 !important;
+  }
+
+  .pvisual .v-grow {
+    transform: none !important;
+  }
+
+  .pvisual .v-pop {
+    opacity: 1 !important;
+  }
+
+  .v-flow {
+    display: none;
+  }
+}

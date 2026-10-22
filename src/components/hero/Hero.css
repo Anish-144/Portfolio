@@ -1,0 +1,404 @@
+/* ------------------------------------------------------------------ Frame */
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--nav-h);
+}
+
+/*
+ * Two columns: the copy takes exactly the width its headline needs, and the
+ * stage gets everything to its right, bleeding past the viewport edge.
+ */
+.hero__grid {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  column-gap: clamp(24px, 4vw, 72px);
+  align-items: center;
+  padding-inline: var(--gutter);
+}
+
+.hero__copy {
+  grid-column: 1;
+  padding-block: clamp(8px, 2.5svh, 36px);
+}
+
+.hero__stage {
+  --bleed: calc(var(--gutter) + 3vw);
+  position: relative;
+  grid-column: 2;
+  align-self: stretch;
+  min-height: 320px;
+  margin-right: calc(-1 * var(--bleed));
+  pointer-events: none;
+}
+
+/* Rotation hint, bottom-right of the visible part of the stage. */
+.hero__hint .rotate-hint {
+  right: var(--bleed);
+  bottom: 3%;
+}
+
+/* Technical annotations in the stage corners, clear of the sculpture's circle. */
+.hero__annotations {
+  position: absolute;
+  inset: 0;
+}
+
+.hero__annotation {
+  position: absolute;
+  display: none;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+  white-space: nowrap;
+}
+
+.hero__annotation::before {
+  content: '';
+  width: 18px;
+  height: 1px;
+  background: var(--c-line-strong);
+}
+
+.hero__annotation-index {
+  color: var(--c-amber);
+}
+
+.hero__annotation--1 {
+  top: 3%;
+  left: 0;
+}
+
+.hero__annotation--2 {
+  top: 3%;
+  right: var(--bleed);
+}
+
+.hero__annotation--3 {
+  bottom: 4%;
+  left: 0;
+}
+
+@media (min-width: 1100px) and (min-height: 700px) and (min-aspect-ratio: 4/5) {
+  .hero__annotation {
+    display: inline-flex;
+  }
+}
+
+
+
+/* --------------------------------------------------------------- Eyebrow */
+
+.hero__eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35em 0.9em;
+  margin-bottom: clamp(18px, 3.4svh, 36px);
+  color: var(--c-ink-2);
+}
+
+.hero__eyebrow::before {
+  content: '';
+  width: 28px;
+  height: 1px;
+  margin-right: 0.3em;
+  background: var(--c-amber);
+}
+
+.hero__eyebrow-sep {
+  color: var(--c-ink-4);
+}
+
+/* -------------------------------------------------------------- Headline */
+
+.hero-headline {
+  font-family: var(--font-display);
+  /* Bound by width and height so the whole composition fits one viewport. */
+  font-size: clamp(2.75rem, min(7vw, 9.8svh), 10rem);
+  font-weight: 820;
+  font-stretch: 74%;
+  line-height: 0.87;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--c-ink);
+  font-kerning: normal;
+}
+
+.hero-headline__sentence {
+  display: block;
+}
+
+.hero-headline__sentence + .hero-headline__sentence {
+  margin-top: 0.1em;
+}
+
+/* Padding then negative margin: room for glyph overshoot without moving the layout. */
+.hero-headline__mask {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.05em;
+  margin-block: -0.05em;
+}
+
+.hero-headline__line {
+  display: block;
+  width: fit-content;
+}
+
+/* Second sentence in brushed silver: same weight, quieter metal. */
+.hero-headline__sentence--secondary .hero-headline__line {
+  background: linear-gradient(
+    180deg,
+    var(--c-silver-hi) 0%,
+    var(--c-silver) 48%,
+    var(--c-silver-lo) 76%,
+    #a9aeb5 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-headline__stop {
+  color: var(--c-amber);
+}
+
+/* ------------------------------------------------------------ Lede + CTAs */
+
+.hero__lede {
+  max-width: 35ch;
+  margin-top: clamp(20px, 3.6svh, 40px);
+  font-size: clamp(15px, 0.55vw + 10px, 18px);
+  line-height: 1.6;
+  color: var(--c-ink-2);
+  text-wrap: pretty;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: clamp(24px, 4svh, 44px);
+}
+
+/* ---------------------------------------------------------------- Footer */
+
+.hero__footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 var(--gutter) max(clamp(10px, 2svh, 24px), env(safe-area-inset-bottom, 0px));
+}
+
+.hero__caption {
+  color: var(--c-ink-3);
+  font-size: 11px;
+  text-align: right;
+}
+
+.scroll-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 44px;
+  padding-right: 8px;
+  color: var(--c-ink-3);
+  transition: color 0.3s ease;
+}
+
+.scroll-cue__label {
+  font-size: 11px;
+}
+
+.scroll-cue__track {
+  position: relative;
+  width: 1px;
+  height: 36px;
+  overflow: hidden;
+  background: var(--c-line-strong);
+}
+
+.scroll-cue__thumb {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 40%;
+  background: var(--c-amber);
+  animation: scroll-cue 2.8s var(--ease-in-out) infinite;
+}
+
+@keyframes scroll-cue {
+  0% {
+    transform: translateY(-100%);
+  }
+  65%,
+  100% {
+    transform: translateY(260%);
+  }
+}
+
+@media (hover: hover) {
+  .scroll-cue:hover {
+    color: var(--c-ink);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cue__thumb {
+    animation: none;
+    transform: translateY(75%);
+  }
+}
+
+/* ---------------------------------------------------- Stacked (portrait) */
+
+/*
+ * Phones and portrait tablets: the stage moves above the copy and bleeds off
+ * the right edge; the copy anchors to the bottom of the first viewport.
+ */
+@media (max-width: 760px), (max-aspect-ratio: 4/5) {
+  .hero__grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-content: space-between;
+    align-items: end;
+  }
+
+  .hero__stage {
+    grid-row: 1;
+    grid-column: 1;
+    --bleed: calc(var(--gutter) + 14vw);
+    height: clamp(170px, 29svh, 440px);
+    min-height: 0;
+    margin-left: 18%;
+    margin-right: calc(-1 * var(--bleed));
+  }
+
+  .hero__copy {
+    grid-row: 2;
+    padding-block: 8px clamp(12px, 2.5svh, 32px);
+  }
+
+  .hero-headline {
+    font-size: clamp(2.75rem, min(12.8vw, 7.4svh), 6.5rem);
+  }
+
+  .hero__lede {
+    max-width: 40ch;
+  }
+
+  /* Tablets: the cue sits in the empty space right of the CTAs instead of adding a row. */
+  .hero__footer {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+  }
+
+  .hero__caption {
+    display: none;
+  }
+}
+
+/* Phones: everything through the CTAs should land in the first viewport. */
+@media (max-width: 560px) {
+  .hero__stage {
+    height: clamp(170px, 33svh, 440px);
+  }
+
+  .hero__eyebrow {
+    gap: 0.3em 0.65em;
+    margin-bottom: clamp(14px, 2.6svh, 24px);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+  }
+
+  .hero__eyebrow::before {
+    width: 16px;
+    margin-right: 0;
+  }
+
+  .hero__lede {
+    margin-top: clamp(16px, 2.8svh, 28px);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .hero__actions {
+    gap: 10px;
+    margin-top: clamp(20px, 3.2svh, 32px);
+  }
+
+  .hero__actions .action {
+    flex: 1 1 auto;
+    gap: 8px;
+    min-height: 52px;
+    padding-inline: 14px 12px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+
+  /* The CTAs already lead downward; the cue and caption would only add height. */
+  .hero__footer {
+    display: none;
+  }
+}
+
+/* Very narrow phones: drop the arrows so both CTAs stay on one row. */
+@media (max-width: 370px) {
+  .hero__actions .action .icon {
+    display: none;
+  }
+}
+
+/*
+ * Landscape phones: the copy is taller than the screen, so a stretched stage
+ * would center the sculpture below the fold. Pin it to the first screen.
+ */
+@media (max-height: 520px) and (orientation: landscape) {
+  .hero__stage {
+    align-self: start;
+    height: calc(100svh - var(--nav-h) - 8px);
+    min-height: 0;
+  }
+
+  .hero__annotation {
+    display: none;
+  }
+}
+
+/* Narrow phones: keep the eyebrow on one line. */
+@media (max-width: 390px) {
+  .hero__eyebrow {
+    gap: 0.3em 0.5em;
+    letter-spacing: 0.06em;
+  }
+
+  .hero__eyebrow::before {
+    display: none;
+  }
+}
+
+/* Short phones (e.g. Safari with toolbars, SE-class devices). */
+@media (max-width: 560px) and (max-height: 760px) {
+  .hero__stage {
+    height: clamp(150px, 25svh, 220px);
+  }
+
+  .hero-headline {
+    font-size: clamp(2.5rem, 11.8vw, 3.5rem);
+  }
+}

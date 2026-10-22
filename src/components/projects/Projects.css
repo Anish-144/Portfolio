@@ -1,0 +1,302 @@
+.projects__list {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: clamp(20px, 2.4vw, 40px);
+  row-gap: clamp(88px, 12vw, 176px);
+}
+
+/* ------------------------------------------------------------------ Card */
+
+.project {
+  position: relative;
+  display: grid;
+  align-items: center;
+  gap: clamp(28px, 3.6vw, 64px);
+}
+
+.project--feature,
+.project--feature-reverse {
+  grid-column: 1 / -1;
+}
+
+.project--feature {
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+}
+
+.project--feature-reverse {
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+}
+
+.project--feature-reverse .project__visual {
+  order: 2;
+}
+
+/* The pair: stacked cards, the narrow one dropped lower for an asymmetric rhythm. */
+.project--pair-wide,
+.project--pair-narrow {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  align-self: start;
+}
+
+.project--pair-wide {
+  grid-column: 1 / span 7;
+}
+
+.project--pair-narrow {
+  grid-column: 8 / -1;
+  margin-top: clamp(0px, 14vw, 220px);
+}
+
+.project__visual {
+  cursor: pointer;
+}
+
+.project__visual .pvisual {
+  transition:
+    border-color 0.5s var(--ease-out-expo),
+    transform 0.8s var(--ease-out-expo);
+}
+
+@media (hover: hover) {
+  .project:hover .pvisual {
+    border-color: var(--c-line-strong);
+    transform: translateY(-4px);
+  }
+}
+
+.project__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  color: var(--c-ink-3);
+}
+
+.project__index {
+  color: var(--c-amber);
+}
+
+.project__context {
+  padding: 3px 8px;
+  border: 1px solid var(--c-line-strong);
+  font-size: 10.5px;
+  color: var(--c-ink-2);
+}
+
+.project__name {
+  margin-top: 18px;
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 5vw, 5.25rem);
+  font-weight: 820;
+  font-stretch: 74%;
+  line-height: 0.88;
+  text-transform: uppercase;
+}
+
+.project--pair-wide .project__name,
+.project--pair-narrow .project__name {
+  font-size: clamp(2.4rem, 4vw, 4.25rem);
+}
+
+.project__tagline {
+  margin-top: 12px;
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 1.2vw, 1.2rem);
+  font-weight: 600;
+  font-stretch: 96%;
+  color: var(--c-silver);
+}
+
+.project__summary {
+  max-width: 50ch;
+  margin-top: 18px;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--c-ink-2);
+}
+
+/* Value above label, hairline-separated. */
+.project__metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 28px 0 24px;
+  border-top: 1px solid var(--c-line);
+  border-bottom: 1px solid var(--c-line);
+}
+
+.project__metric {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 16px 14px 16px 0;
+}
+
+.project__metric + .project__metric {
+  padding-left: 14px;
+  border-left: 1px solid var(--c-line);
+}
+
+.project__metric dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.2vw, 2.1rem);
+  font-weight: 760;
+  font-stretch: 80%;
+  line-height: 1;
+  color: var(--c-ink);
+}
+
+.project__metric dt {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--c-ink-3);
+}
+
+.project__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  margin-top: 28px;
+}
+
+.project__open {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 48px;
+  padding: 0 18px 0 20px;
+  border: 0;
+  background: none;
+  color: #0a0a0b;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 620;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.project__open::before,
+.project__open::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+
+.project__open::before {
+  background: var(--c-ink);
+}
+
+.project__open::after {
+  background: var(--c-amber);
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 0.6s var(--ease-out-expo);
+}
+
+.project__open .icon {
+  transition: transform 0.5s var(--ease-out-expo);
+}
+
+@media (hover: hover) {
+  .project:hover .project__open::after,
+  .project__open:hover::after {
+    transform: scaleX(1);
+    transform-origin: left center;
+  }
+
+  .project:hover .project__open .icon {
+    transform: translateX(4px);
+  }
+}
+
+.project__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-ink-2);
+  border-bottom: 1px solid transparent;
+  transition:
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+@media (hover: hover) {
+  .project__link:hover {
+    color: var(--c-ink);
+    border-bottom-color: var(--c-amber);
+  }
+}
+
+.projects__more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-top: clamp(72px, 10vw, 144px);
+  padding-top: 24px;
+  border-top: 1px solid var(--c-line);
+  color: var(--c-ink-3);
+}
+
+/* ------------------------------------------------------------- Responsive */
+
+@media (max-width: 1100px) {
+  .project--feature,
+  .project--feature-reverse {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .project--feature-reverse .project__visual {
+    order: 0;
+  }
+
+  .project--pair-wide,
+  .project--pair-narrow {
+    grid-column: 1 / -1;
+    margin-top: 0;
+  }
+
+  .project--pair-wide,
+  .project--pair-narrow,
+  .project--feature,
+  .project--feature-reverse {
+    max-width: 52rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .project__metrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .project__metric,
+  .project__metric + .project__metric {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    align-items: baseline;
+    gap: 14px;
+    padding: 12px 0;
+    border-left: 0;
+  }
+
+  .project__metric + .project__metric {
+    border-top: 1px solid var(--c-line);
+  }
+
+  .project__metric dd {
+    min-width: 4.2rem;
+  }
+}

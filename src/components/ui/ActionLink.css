@@ -1,0 +1,108 @@
+/*
+ * The chamfer lives on pseudo-elements, not the element itself, so the
+ * focus outline is never clipped away.
+ */
+.action {
+  --chamfer: 12px;
+  --shape: polygon(
+    0 0,
+    calc(100% - var(--chamfer)) 0,
+    100% var(--chamfer),
+    100% 100%,
+    var(--chamfer) 100%,
+    0 calc(100% - var(--chamfer))
+  );
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 54px;
+  padding: 0 22px 0 26px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 620;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transition: color 0.45s var(--ease-out-expo);
+}
+
+.action::before,
+.action::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  clip-path: var(--shape);
+}
+
+.action::after {
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 0.6s var(--ease-out-expo);
+}
+
+.action .icon {
+  flex: none;
+  transition: transform 0.5s var(--ease-out-expo);
+}
+
+/* Primary: solid off-white plate, amber wipe on hover. */
+.action--primary {
+  color: #0a0a0b;
+}
+
+.action--primary::before {
+  background: var(--c-ink);
+}
+
+.action--primary::after {
+  background: var(--c-amber);
+}
+
+/* Secondary: a 1px chamfered frame drawn by two stacked plates. */
+.action--secondary {
+  color: var(--c-ink);
+}
+
+.action--secondary::before {
+  background: var(--c-line-strong);
+}
+
+.action--secondary::after {
+  inset: 1px;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--chamfer) + 0.5px) 0,
+    100% calc(var(--chamfer) - 0.5px),
+    100% 100%,
+    calc(var(--chamfer) - 0.5px) 100%,
+    0 calc(100% - var(--chamfer) + 0.5px)
+  );
+  background: var(--c-bg);
+  transform: none;
+}
+
+.action--secondary .action__label {
+  position: relative;
+}
+
+@media (hover: hover) {
+  .action:hover .icon {
+    transform: translateX(4px);
+  }
+
+  .action--primary:hover::after {
+    transform: scaleX(1);
+    transform-origin: left center;
+  }
+
+  .action--secondary:hover::before {
+    background: var(--c-ink-2);
+  }
+}

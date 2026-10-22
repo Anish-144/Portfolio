@@ -1,0 +1,216 @@
+/* Closing scene: the sculpture's journey ends on this section's stage. */
+.contact {
+  position: relative;
+  z-index: 2;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  padding: calc(var(--nav-h) + clamp(48px, 8vh, 96px)) 0 clamp(48px, 8vh, 96px);
+}
+
+.section + .contact {
+  border-top: 1px solid var(--c-line);
+}
+
+.contact__grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+  gap: clamp(32px, 4vw, 72px);
+  align-items: center;
+  width: min(100% - 2 * var(--gutter), var(--shell-max));
+}
+
+.contact__copy {
+  display: grid;
+  justify-items: start;
+  gap: clamp(20px, 2.6vw, 32px);
+}
+
+.contact__title {
+  max-width: 6.4em;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 6.2vw, 7.25rem);
+  font-weight: 830;
+  font-stretch: 72%;
+  line-height: 0.86;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.contact__invitation {
+  max-width: 44ch;
+  font-size: clamp(16px, 0.4vw + 13px, 19px);
+  line-height: 1.6;
+  color: var(--c-ink-2);
+}
+
+.contact__address {
+  max-width: 100%;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.6vw, 2.4rem);
+  font-weight: 600;
+  font-stretch: 92%;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--c-line-strong);
+  padding-bottom: 6px;
+  transition: border-color 0.3s ease;
+}
+
+@media (hover: hover) {
+  .contact__address:hover {
+    border-bottom-color: var(--c-amber);
+  }
+}
+
+.contact__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.copy-email[data-state='copied'] {
+  color: var(--c-amber);
+}
+
+.contact__social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.contact__social a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: var(--c-ink);
+}
+
+.contact__social-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.contact__social-handle {
+  font-size: 14px;
+  color: var(--c-ink-3);
+}
+
+@media (hover: hover) {
+  .contact__social a:hover .contact__social-handle {
+    color: var(--c-amber);
+  }
+}
+
+.contact__stage {
+  position: relative;
+  align-self: stretch;
+  min-height: min(72vh, 640px);
+  container-type: size;
+  pointer-events: none;
+}
+
+.contact__stage .rotate-hint {
+  right: 0;
+  bottom: 4%;
+}
+
+/* Phones: both actions on one row (same sizing as the hero CTAs), hint inside the gutter. */
+@media (max-width: 560px) {
+  .contact {
+    padding-top: calc(var(--nav-h) + 24px);
+  }
+
+  .contact__actions {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .contact__actions .action {
+    flex: 1 1 auto;
+    gap: 8px;
+    min-height: 52px;
+    padding-inline: 14px 12px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+
+  .contact__social {
+    gap: 0 24px;
+  }
+
+  .contact__stage .rotate-hint {
+    right: var(--gutter);
+  }
+}
+
+@media (max-width: 860px), (max-aspect-ratio: 4/5) {
+  .contact {
+    align-items: flex-start;
+  }
+
+  .section + .contact {
+  border-top: 1px solid var(--c-line);
+}
+
+.contact__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .contact__stage {
+    grid-row: 1;
+    min-height: 0;
+    height: clamp(200px, 34svh, 380px);
+    margin-right: calc(-1 * var(--gutter));
+  }
+}
+
+/* ------------------------------------------------------------ Footer */
+
+.site-footer {
+  position: relative;
+  z-index: 2;
+  border-top: 1px solid var(--c-line);
+  background: rgb(6 7 8 / 0.82);
+  backdrop-filter: blur(10px);
+}
+
+.site-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 32px;
+  padding-block: 20px max(20px, env(safe-area-inset-bottom, 0px));
+}
+
+.site-footer__name {
+  font-size: 14px;
+  color: var(--c-ink-2);
+}
+
+.site-footer__focus {
+  color: var(--c-ink-3);
+  font-size: 11px;
+}
+
+.site-footer__top {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: var(--c-ink-2);
+  font-size: 11px;
+}
+
+@media (hover: hover) {
+  .site-footer__top:hover {
+    color: var(--c-amber);
+  }
+}

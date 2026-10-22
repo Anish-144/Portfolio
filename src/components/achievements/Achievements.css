@@ -1,0 +1,178 @@
+.awards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(20px, 2.4vw, 40px);
+}
+
+.award {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: clamp(28px, 3.4vw, 52px);
+  border: 1px solid var(--c-line);
+  background:
+    radial-gradient(ellipse 80% 70% at 100% 0%, rgb(240 164 60 / 0.06), transparent 60%),
+    var(--c-bg);
+  overflow: hidden;
+}
+
+.award::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 48px;
+  height: 2px;
+  background: var(--c-amber);
+}
+
+.award__year {
+  color: var(--c-ink-3);
+}
+
+.award__figure {
+  margin-top: 8px;
+  font-family: var(--font-display);
+  font-size: clamp(4.5rem, 10vw, 9.5rem);
+  font-weight: 830;
+  font-stretch: 70%;
+  line-height: 0.82;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, var(--c-silver-hi) 0%, var(--c-silver) 55%, var(--c-silver-lo) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.award__title {
+  margin-top: 10px;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2vw, 1.9rem);
+  font-weight: 760;
+  font-stretch: 84%;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.award__detail {
+  font-size: 15px;
+  color: var(--c-ink-2);
+}
+
+.placement {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+  padding-top: 28px;
+}
+
+/* Direct value label, anchored at the marker and clamped inside the card. */
+.placement__value {
+  position: absolute;
+  top: 0;
+  transform: translateX(-12px);
+  color: var(--c-ink);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.placement__track {
+  position: relative;
+  height: 8px;
+  background: rgb(240 164 60 / 0.2);
+}
+
+/* Square at the baseline, rounded data-end; grows in when the card is revealed. */
+.placement__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  min-width: 8px;
+  border-radius: 0 4px 4px 0;
+  background: var(--c-amber);
+  transform-origin: left center;
+  transition: transform 1.2s var(--ease-out-expo) 0.3s;
+}
+
+.placement__marker {
+  position: absolute;
+  top: -7px;
+  width: 2px;
+  height: 22px;
+  margin-left: -1px;
+  background: var(--c-ink);
+  box-shadow: 0 0 0 2px var(--c-bg);
+}
+
+.placement__labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--c-ink-3);
+  font-size: 10.5px;
+}
+
+html.reveal-armed [data-reveal-item]:not([data-revealed]) .placement__fill {
+  transform: scaleX(0);
+}
+
+/* ------------------------------------------------------------ Credentials */
+
+.credentials {
+  margin: clamp(48px, 6vw, 80px) 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--c-line-strong);
+}
+
+.credential {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr) auto;
+  gap: 8px 32px;
+  align-items: baseline;
+  padding: 26px 0;
+  border-bottom: 1px solid var(--c-line);
+}
+
+.credential__kind {
+  color: var(--c-amber);
+  font-size: 11px;
+}
+
+.credential__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.8vw, 1.65rem);
+  font-weight: 740;
+  font-stretch: 86%;
+  line-height: 1.1;
+}
+
+.credential__issuer {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--c-ink-3);
+}
+
+.credential__detail {
+  max-width: 62ch;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--c-ink-2);
+}
+
+.credential__meta {
+  color: var(--c-ink-2);
+  white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+  .awards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .credential {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
