@@ -16,6 +16,8 @@ export interface QualitySettings {
   bearingBalls: number;
   statorCount: number;
   raceBolts: number;
+  /** Atmosphere. */
+  dustCount: number;
 }
 
 const HIGH: QualitySettings = {
@@ -33,6 +35,7 @@ const HIGH: QualitySettings = {
   bearingBalls: 22,
   statorCount: 40,
   raceBolts: 24,
+  dustCount: 420,
 };
 
 const LOW: QualitySettings = {
@@ -50,6 +53,7 @@ const LOW: QualitySettings = {
   bearingBalls: 22,
   statorCount: 28,
   raceBolts: 16,
+  dustCount: 160,
 };
 
 /** Picked once per session: phones and low-core devices get lighter geometry and materials. */

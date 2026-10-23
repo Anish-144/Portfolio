@@ -75,7 +75,7 @@ src/
 - how far apart the parts are pulled;
 - lighting, opacity, tempo, iris aperture, data-stream density, and data-bus activity.
 
-Between stations, departing components shrink back into depth along the assembly axis, and the arriving one grows out of it, like a product breakdown video:
+Between stations, departing components unwind and shrink back into depth along the assembly axis, and the arriving one screws in out of it, like a product breakdown video. Each arrival sends a power surge through the lit parts:
 
 | Section | Component isolated |
 |---|---|
@@ -87,19 +87,19 @@ Between stations, departing components shrink back into depth along the assembly
 | Achievements | Part 05: instrument gimbals |
 | Contact | Reassembled |
 
-On wide screens, a callout (dimension ring, leader line, part label from `src/content/breakdown.ts`) appears as each section arrives and fades as you read on. Phones get the same teardown without callouts.
+On wide screens, a dimension ring appears around the featured part as each section arrives and fades as you read on. Phones get the same teardown without it.
 
 The sculpture is built entirely in code:
 
-- **Core:** split shell with chrome meridian ribs, knurled pole crowns with amber pins, an inner gyroscope, and a 10-blade iris;
+- **Core:** split shell with chrome meridian ribs, knurled pole crowns with amber pins, an inner gyroscope, a 10-blade iris, and amber circuitry on the black core with data pulses running along it; light spills from the gap when the shell parts;
 - **Indexing ring:** machined segments with vent slots and end bolts, riding on a 22-ball bearing whose cage turns at half speed;
 - **Turbine:** a rotor with bolt circles, a counter-rotating stator row on a spoked frame, and coolant loops;
 - **Data bus:** memory blocks on a machined mounting race;
 - **Gear gimbal:** pivot bearings, three pinions meshing at the true gear ratio, and an engraved inscription;
 - **Dial gimbal, scanner orbit and network lattice;**
-- **Effects:** a GPU particle stream and an amber pulse at each station arrival.
+- **Effects:** a GPU particle stream, an amber pulse at each station arrival, and drifting dust around the sculpture.
 
-Metal surfaces carry a turned-metal roughness grain.
+Metal surfaces carry a turned-metal roughness grain. The procedural studio that lights them swings slowly (and with the pointer), so highlights glide across the metal, and the camera drifts slightly as if hand-held. Lit amber glows: `screenBloom.ts` copies each finished frame, picks out the amber and the hottest glints, blurs them at reduced resolution and adds them back, fading over pixels that are already bright so the amber keeps its hue.
 
 **360° rotation.** In the hero and contact sections the sculpture can be turned freely:
 
@@ -129,6 +129,7 @@ The hero and contact stages are empty layout cells. A camera lens shift (`setVie
 
 - **Lazy chunks:** the three.js chunk loads after first paint, and the project illustrations and case-study code are separate lazy chunks.
 - **Phones and low-core devices** get lighter geometry and materials and a lower DPR cap.
+- **Glow** is built from the finished, multisampled frame rather than by rendering into a multisampled float target, which was several times slower on integrated GPUs. Its composite skips pixels with no glow.
 - **Animations** run only while on screen and are disabled under reduced motion.
 
 **Fallback.** WebGL 2 is required by three.js. If it is unavailable, if the renderer or its chunk fails, or if the context is lost, a CSS rendition of the sculpture takes the hero stage, and an inline copy fills the contact stage.

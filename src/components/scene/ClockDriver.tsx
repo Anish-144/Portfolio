@@ -11,6 +11,9 @@ const MAX_STEP = 1 / 30;
 const STILL_POSE_TIME = 7.5;
 /** How quickly the journey catches up with the scroll position (higher = tighter). */
 const TRAVEL_DAMPING = 4.5;
+/** Arrival surge envelope: fast attack, slow decay (per second). */
+const SURGE_ATTACK = 14;
+const SURGE_DECAY = 1.6;
 
 interface ClockDriverProps {
   clock: SceneClock;
@@ -22,6 +25,7 @@ interface ClockDriverProps {
 export function ClockDriver({ clock, motion, reduced }: ClockDriverProps) {
   const frames = useRef(0);
   const opacity = useRef(-1);
+  const station = useRef(-1);
   const canvas = useThree((state) => state.gl.domElement);
 
   useFrame(({ size }, delta) => {
@@ -52,6 +56,13 @@ export function ClockDriver({ clock, motion, reduced }: ClockDriverProps) {
       reduced,
     );
     if (!reduced) clock.time += dt * clock.journey.tempo;
+
+    // Each new station sends a surge through the lit parts (not on load, not under reduced motion).
+    const arrived = station.current !== -1 && station.current !== clock.journey.station;
+    station.current = clock.journey.station;
+    clock.sinceArrival = arrived && !reduced ? 0 : clock.sinceArrival + dt;
+    const since = clock.sinceArrival;
+    clock.surge = Number.isFinite(since) ? (1 - Math.exp(-SURGE_ATTACK * since)) * Math.exp(-SURGE_DECAY * since) : 0;
 
     // Light arrives while the camera is still orbiting, so reflections sweep across the metal.
     clock.lights = easeInOutSine(segment(clock.intro, 0, 0.5));

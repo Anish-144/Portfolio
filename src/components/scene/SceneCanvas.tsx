@@ -3,8 +3,10 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { ACESFilmicToneMapping } from 'three';
 import type { MotionState } from '../../animation/motion';
 import { usePrefersReducedMotion } from '../../hooks/useMediaQuery';
+import { Atmosphere } from './Atmosphere';
 import { CameraRig } from './CameraRig';
 import { ClockDriver } from './ClockDriver';
+import { PostEffects } from './PostEffects';
 import { detectQuality } from './quality';
 import { createSceneClock } from './sceneClock';
 import { SceneLights } from './SceneLights';
@@ -82,7 +84,9 @@ export default function SceneCanvas({ motion, active, onContextLost }: SceneCanv
       <StudioEnvironment clock={clock} />
       <SceneLights clock={clock} />
       <CameraRig clock={clock} motion={motion} />
+      <Atmosphere clock={clock} quality={quality} />
       <Sculpture clock={clock} quality={quality} motion={motion} />
+      <PostEffects clock={clock} />
     </Canvas>
   );
 }

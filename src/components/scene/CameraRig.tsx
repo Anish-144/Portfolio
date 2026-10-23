@@ -34,8 +34,12 @@ export function CameraRig({ clock, motion }: CameraRigProps) {
     const tanHalfFov = Math.tan(MathUtils.degToRad(camera.fov / 2));
     // Each station frames its own featured component: the teardown zooms in and out.
     const distance = ((journey.fit * height) / (stageSize * tanHalfFov)) * lerp(1.55, 1, intro);
-    const azimuth = lerp(-0.8, 0, intro) + journey.yaw + clock.pointerX * 0.05;
-    const elevation = lerp(0.38, REST_ELEVATION, intro) + journey.pitch + clock.pointerY * 0.035;
+    // A slow, uneven drift, like a camera operator holding the shot.
+    const t = clock.time;
+    const driftYaw = Math.sin(t * 0.23) * 0.016 + Math.sin(t * 0.11 + 1.3) * 0.012;
+    const driftPitch = Math.sin(t * 0.19 + 0.7) * 0.011;
+    const azimuth = lerp(-0.8, 0, intro) + journey.yaw + clock.pointerX * 0.05 + driftYaw;
+    const elevation = lerp(0.38, REST_ELEVATION, intro) + journey.pitch + clock.pointerY * 0.035 + driftPitch;
 
     camera.position.set(
       distance * Math.sin(azimuth) * Math.cos(elevation),
@@ -56,8 +60,6 @@ export function CameraRig({ clock, motion }: CameraRigProps) {
       y: centerY,
       ring: (stageSize / 2) * (journey.focus / journey.fit),
       opacity: journey.calloutOpacity,
-      part: journey.callout ? journey.stationId : '',
-      direction: journey.callout ?? '',
     });
   });
 

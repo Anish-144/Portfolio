@@ -5,8 +5,14 @@ import type { SceneClock } from './sceneClock';
 import { createStudioScene } from './studio';
 
 const ENVIRONMENT_INTENSITY = 1.05;
+/** How far (radians) the studio swings either way, and how fast. */
+const SWEEP = { angle: 0.75, speed: 0.07 } as const;
 
-/** Bakes the procedural studio into a prefiltered environment map for reflections. */
+/**
+ * Bakes the procedural studio into a prefiltered environment map for
+ * reflections, then swings it slowly (and a little with the pointer) so
+ * highlights glide across the metal instead of sitting still.
+ */
 export function StudioEnvironment({ clock }: { clock: SceneClock }) {
   const gl = useThree((state) => state.gl);
   const scene = useThree((state) => state.scene);
@@ -27,6 +33,8 @@ export function StudioEnvironment({ clock }: { clock: SceneClock }) {
 
   useFrame(() => {
     scene.environmentIntensity = ENVIRONMENT_INTENSITY * clock.lights * clock.journey.level;
+    scene.environmentRotation.y = Math.sin(clock.time * SWEEP.speed) * SWEEP.angle + clock.pointerX * 0.3;
+    scene.environmentRotation.x = clock.pointerY * 0.12;
   });
 
   return null;

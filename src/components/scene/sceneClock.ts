@@ -21,6 +21,10 @@ export interface SceneClock {
   pointerY: number;
   /** True under reduced motion: event animations (arrival pulses) stay off. */
   still: boolean;
+  /** Seconds since the journey last arrived at a new station (Infinity before the first). */
+  sinceArrival: number;
+  /** 0–1 power surge that runs through every lit part on arrival, then decays. */
+  surge: number;
 }
 
 export const createSceneClock = (): SceneClock => ({
@@ -33,4 +37,6 @@ export const createSceneClock = (): SceneClock => ({
   pointerX: 0,
   pointerY: 0,
   still: false,
+  sinceArrival: Number.POSITIVE_INFINITY,
+  surge: 0,
 });

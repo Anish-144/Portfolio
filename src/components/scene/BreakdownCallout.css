@@ -1,26 +1,14 @@
 /*
  * Driven by the camera rig through custom properties on .scene-layer:
  *   --bd-x / --bd-y   ring center (viewport px)     --bd-r  ring radius (px)
- *   --bd-o            visibility 0–1 (also draws the leader)
- *   [data-direction]  ne · nw · se · sw · e · w      [data-part]  section id
+ *   --bd-o            visibility 0–1
  */
 .breakdown {
-  --dx: 0;
-  --dy: 0;
-  --sx: 1;
-  --sy: 1;
   position: absolute;
   inset: 0;
   pointer-events: none;
   opacity: var(--bd-o, 0);
 }
-
-.scene-layer[data-direction='ne'] .breakdown { --dx: 0.7071; --dy: -0.7071; --sx: 1; --sy: 1; }
-.scene-layer[data-direction='nw'] .breakdown { --dx: -0.7071; --dy: -0.7071; --sx: -1; --sy: 1; }
-.scene-layer[data-direction='se'] .breakdown { --dx: 0.7071; --dy: 0.7071; --sx: 1; --sy: -1; }
-.scene-layer[data-direction='sw'] .breakdown { --dx: -0.7071; --dy: 0.7071; --sx: -1; --sy: -1; }
-.scene-layer[data-direction='e'] .breakdown { --dx: 1; --dy: 0; --sx: 1; --sy: 1; }
-.scene-layer[data-direction='w'] .breakdown { --dx: -1; --dy: 0; --sx: -1; --sy: 1; }
 
 /* ----------------------------------------------------- Dimension ring */
 
@@ -43,122 +31,6 @@
   border-radius: 50%;
   background: repeating-conic-gradient(rgb(240 164 60 / 0.6) 0 0.5deg, transparent 0.5deg 6deg);
   mask: radial-gradient(circle closest-side, transparent 92%, #000 92.5%);
-}
-
-/* ------------------------------------------------- Leader and label */
-
-.breakdown__anchor {
-  position: absolute;
-  left: calc(var(--bd-x, 0px) + (var(--bd-r, 0px) + 9px) * var(--dx));
-  top: calc(var(--bd-y, 0px) + (var(--bd-r, 0px) + 9px) * var(--dy));
-  width: 0;
-  height: 0;
-}
-
-.breakdown__dot {
-  position: absolute;
-  left: -4px;
-  top: -4px;
-  width: 8px;
-  height: 8px;
-  border: 1px solid var(--c-amber);
-  background: var(--c-bg);
-  transform: rotate(45deg);
-}
-
-/* The leader's start sits on the anchor; mirroring flips it into each quadrant. */
-.breakdown__leader {
-  position: absolute;
-  left: 0;
-  top: -32px;
-  overflow: visible;
-  transform: scale(var(--sx), var(--sy));
-  transform-origin: 0 100%;
-}
-
-.breakdown__leader path {
-  fill: none;
-  stroke: var(--c-amber);
-  stroke-width: 1.25;
-  vector-effect: non-scaling-stroke;
-  stroke-dasharray: 1;
-  /* Draws in as the callout fades up. */
-  stroke-dashoffset: calc(1 - var(--bd-o, 0));
-}
-
-.breakdown__leader--flat {
-  display: none;
-}
-
-.scene-layer:is([data-direction='e'], [data-direction='w']) .breakdown__leader--diagonal {
-  display: none;
-}
-
-.scene-layer:is([data-direction='e'], [data-direction='w']) .breakdown__leader--flat {
-  display: block;
-}
-
-.breakdown__label {
-  --ey: calc(-30px * var(--sy));
-  position: absolute;
-  left: calc(80px * var(--sx));
-  top: var(--ey);
-  transform: translate(calc((var(--sx) - 1) * 50%), -50%);
-  width: max-content;
-  max-width: 260px;
-  padding: 10px 12px;
-  border-left: 1px solid var(--c-amber);
-  background: rgb(6 7 8 / 0.72);
-}
-
-.scene-layer:is([data-direction='e'], [data-direction='w']) .breakdown__label {
-  --ey: 0px;
-}
-
-.scene-layer:is([data-direction='nw'], [data-direction='sw'], [data-direction='w']) .breakdown__label {
-  border-left: 0;
-  border-right: 1px solid var(--c-amber);
-  text-align: right;
-}
-
-.breakdown__item {
-  display: none;
-  gap: 4px;
-}
-
-.scene-layer[data-part='about'] .breakdown__item[data-for='about'],
-.scene-layer[data-part='experience'] .breakdown__item[data-for='experience'],
-.scene-layer[data-part='projects'] .breakdown__item[data-for='projects'],
-.scene-layer[data-part='skills'] .breakdown__item[data-for='skills'],
-.scene-layer[data-part='achievements'] .breakdown__item[data-for='achievements'] {
-  display: grid;
-}
-
-.breakdown__part {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--c-amber);
-}
-
-.breakdown__name {
-  font-family: var(--font-display);
-  font-size: 17px;
-  font-weight: 760;
-  font-stretch: 86%;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--c-ink);
-}
-
-.breakdown__spec {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  color: var(--c-ink-2);
 }
 
 /* Callouts are a wide-screen detail; narrow layouts keep just the moving parts. */

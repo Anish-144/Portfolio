@@ -70,7 +70,7 @@ export function createMotionState(): MotionState {
     sections: [],
     layer: null,
     spot: { x: -1, y: -1, size: -1 },
-    callout: { x: -1, y: -1, ring: -1, opacity: -1, part: '', direction: '' },
+    callout: { x: -1, y: -1, ring: -1, opacity: -1 },
     sceneReady: false,
     invalidate: () => {},
     readyListeners: new Set(),
@@ -108,16 +108,13 @@ export function setSceneSpot(motion: MotionState, x: number, y: number, size: nu
   layer.style.setProperty('--spot-size', `${size.toFixed(1)}px`);
 }
 
-/** Breakdown callout: dimension ring around the featured part plus a labelled leader. */
+/** Breakdown callout: dimension ring around the featured part. */
 export interface CalloutState {
   /** Ring center and radius, viewport pixels. */
   x: number;
   y: number;
   ring: number;
   opacity: number;
-  /** Section whose label is shown, and the leader's direction. */
-  part: string;
-  direction: string;
 }
 
 /** Publishes the callout to the scene layer as CSS custom properties; skips no-op writes. */
@@ -134,8 +131,6 @@ export function setCallout(motion: MotionState, next: CalloutState): void {
     layer.style.setProperty('--bd-r', `${next.ring.toFixed(1)}px`);
     layer.style.setProperty('--bd-o', next.opacity.toFixed(3));
   }
-  if (last.part !== next.part) layer.dataset.part = next.part;
-  if (last.direction !== next.direction) layer.dataset.direction = next.direction;
   motion.callout = next;
 }
 

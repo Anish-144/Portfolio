@@ -224,6 +224,8 @@ const STREAM_VERTEX = /* glsl */ `
 `;
 
 const STREAM_FRAGMENT = /* glsl */ `
+  uniform vec3 uCool;
+  uniform vec3 uWarm;
   varying float vAlpha;
   varying float vWarm;
 
@@ -231,8 +233,8 @@ const STREAM_FRAGMENT = /* glsl */ `
     float d = length(gl_PointCoord - 0.5);
     float a = smoothstep(0.5, 0.12, d) * vAlpha;
     if (a < 0.01) discard;
-    vec3 color = mix(vec3(0.82, 0.85, 0.9), vec3(1.0, 0.64, 0.24), vWarm);
-    gl_FragColor = vec4(color, a);
+    gl_FragColor = vec4(mix(uCool, uWarm, vWarm), a);
+    #include <colorspace_fragment>
   }
 `;
 
@@ -258,10 +260,17 @@ export function DataStream({ clock, quality }: PartProps) {
     const material = new ShaderMaterial({
       vertexShader: STREAM_VERTEX,
       fragmentShader: STREAM_FRAGMENT,
-      uniforms: { uTime: { value: 0 }, uFlow: { value: 0 }, uSize: { value: 60 } },
+      uniforms: {
+        uTime: { value: 0 },
+        uFlow: { value: 0 },
+        uSize: { value: 60 },
+        uCool: { value: new Color('#d1d9e6') },
+        uWarm: { value: new Color(AMBER) },
+      },
       transparent: true,
       depthWrite: false,
       blending: AdditiveBlending,
+      toneMapped: false,
     });
     return { geometry, material };
   }, [count]);
@@ -287,8 +296,6 @@ const PULSE_RINGS = 2;
  */
 export function ArrivalPulse({ clock }: PartProps) {
   const rings = useRef<Array<Mesh | null>>([]);
-  const lastStation = useRef(-1);
-  const progress = useRef(1);
 
   const resources = useDisposable(() => {
     const material = () =>
@@ -304,19 +311,13 @@ export function ArrivalPulse({ clock }: PartProps) {
     return { ring: new RingGeometry(1, 1.012, 160), lead: material(), trail: material() };
   }, []);
 
-  useFrame((_, delta) => {
-    const station = clock.journey.station;
-    if (lastStation.current === -1) lastStation.current = station;
-    else if (station !== lastStation.current) {
-      lastStation.current = station;
-      if (!clock.still) progress.current = 0;
-    }
-    if (progress.current < 1) progress.current = Math.min(1, progress.current + Math.min(delta, 1 / 30) / PULSE_SECONDS);
+  useFrame(() => {
+    const progress = clamp01(clock.sinceArrival / PULSE_SECONDS);
 
     rings.current.forEach((ring, index) => {
       if (!ring) return;
-      const t = clamp01(progress.current * 1.3 - index * 0.3);
-      const active = progress.current < 1 && t > 0 && t < 1;
+      const t = clamp01(progress * 1.3 - index * 0.3);
+      const active = progress < 1 && t > 0 && t < 1;
       ring.visible = active;
       if (!active) return;
       ring.scale.setScalar(lerp(1.1, 4.6, easeOutCubic(t)));

@@ -43,6 +43,21 @@ const EXIT_DEPTH: Record<PartKey, number> = {
   network: -10,
 };
 
+/**
+ * How far each component turns about the assembly axis on its way in or out,
+ * so a hand-off reads as parts screwing in and unwinding. Neighbors alternate.
+ */
+const TWIST: Record<PartKey, number> = {
+  core: 0.9,
+  segments: -1.3,
+  turbine: 1.6,
+  bus: -1.1,
+  gear: 1.2,
+  dial: -1.5,
+  scanner: 0.8,
+  network: 0.4,
+};
+
 /** Moves one component on or off stage from the journey's presence value. */
 function PartSlot({ clock, part, children }: { clock: SceneClock; part: PartKey; children: ReactNode }) {
   const slot = useRef<Group>(null);
@@ -56,6 +71,7 @@ function PartSlot({ clock, part, children }: { clock: SceneClock; part: PartKey;
     g.visible = presence > 0.01;
     if (!g.visible) return;
     g.position.z = (1 - presence) * EXIT_DEPTH[part];
+    g.rotation.z = (1 - presence) ** 2 * TWIST[part];
     g.scale.setScalar(presence);
   });
 

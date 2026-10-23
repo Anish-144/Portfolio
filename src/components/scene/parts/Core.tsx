@@ -14,6 +14,7 @@ import { TAU } from '../../../animation/easing';
 import { createCrown, createMeridianRibs, createShellCap } from '../geometry';
 import { AMBER, type SculptureMaterials } from '../materials';
 import { useDisposable } from '../useDisposable';
+import { CoreTraces, SlitLight } from './Energy';
 import { layoutInstances, type PartProps } from './shared';
 
 const SHELL = { outer: 0.74, inner: 0.69, gap: 0.1 } as const;
@@ -64,9 +65,9 @@ function CoreCap({ geometry, materials }: { geometry: CapGeometry; materials: Sc
 }
 
 /**
- * The dark heart of the sculpture: a clear-coated black sphere inside a split
- * shell. An amber filament glows through the equatorial slit, and the two
- * halves part as the hero scrolls away.
+ * The dark heart of the sculpture: a clear-coated black sphere, traced with
+ * amber circuitry, inside a split shell. A filament glows through the
+ * equatorial slit; when the halves part, light spills out of the gap.
  */
 export function Core({ clock, materials, quality }: PartProps) {
   const spin = useRef<Group>(null);
@@ -98,7 +99,7 @@ export function Core({ clock, materials, quality }: PartProps) {
     if (spin.current) spin.current.rotation.y = clock.time * 0.14;
     if (top.current) top.current.position.y = open;
     if (bottom.current) bottom.current.position.y = -open;
-    if (light.current) light.current.intensity = 6 * clock.power;
+    if (light.current) light.current.intensity = 6 * clock.power * (1 + 1.5 * clock.surge);
     // Inner gyroscope: two hairline rings tumbling on crossed axes inside the shell.
     if (gyroA.current) gyroA.current.rotation.y = clock.time * 0.6;
     if (gyroB.current) gyroB.current.rotation.x = clock.time * 0.45;
@@ -109,6 +110,8 @@ export function Core({ clock, materials, quality }: PartProps) {
   return (
     <group>
       <mesh geometry={geometry.sphere} material={materials.obsidian} />
+      <CoreTraces clock={clock} materials={materials} quality={quality} />
+      <SlitLight clock={clock} materials={materials} quality={quality} />
       <mesh geometry={geometry.filament} material={materials.amber} />
       <group ref={gyroA}>
         <mesh geometry={geometry.gyro} material={materials.chrome} />
