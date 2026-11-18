@@ -23,7 +23,7 @@ The project has no linter configured. The strict `tsc` check acts as the gate.
 While testing, these are useful:
 
 - `?nowebgl` forces the CSS fallback sculpture, e.g. `http://localhost:5173/?nowebgl`.
-- `#projects/<id>` deep-links to a case study (`auditai`, `cyberguard`, `cloudguard`, `safedrive-ai`).
+- `#projects/<id>` deep-links to a case study (`auditai`, `cyberguard`, `attacksimulator`, `cloudguard`, `safedrive-ai`).
 - Turning on your OS "reduce motion" setting shows the static variant.
 - Development builds show dashed amber **DEV** notes beside content that still needs confirmation. Production builds never render them.
 

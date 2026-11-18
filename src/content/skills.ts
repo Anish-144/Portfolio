@@ -27,10 +27,13 @@ export const SKILL_GROUPS: readonly SkillGroup[] = [
     summary: 'Retrieval, agents, and model integration built as dependable software.',
     skills: [
       { name: 'Retrieval-Augmented Generation (RAG)', usedIn: [project('cyberguard')] },
-      { name: 'LLM APIs & embeddings', usedIn: [project('cyberguard'), project('auditai'), project('safedrive-ai')] },
+      {
+        name: 'LLM APIs & embeddings',
+        usedIn: [project('cyberguard'), project('auditai'), project('attacksimulator'), project('safedrive-ai')],
+      },
       { name: 'FAISS & vector retrieval', usedIn: [project('cyberguard'), project('auditai')] },
       { name: 'LangGraph & agent workflows', usedIn: [project('auditai')] },
-      { name: 'Prompt engineering', usedIn: [project('cyberguard')] },
+      { name: 'Prompt engineering', usedIn: [project('cyberguard'), project('attacksimulator')] },
       { name: 'Structured outputs & AI output validation' },
     ],
   },
@@ -41,17 +44,26 @@ export const SKILL_GROUPS: readonly SkillGroup[] = [
     skills: [
       {
         name: 'Python',
-        usedIn: [project('auditai'), project('cyberguard'), project('cloudguard'), project('safedrive-ai')],
+        usedIn: [
+          project('auditai'),
+          project('cyberguard'),
+          project('attacksimulator'),
+          project('cloudguard'),
+          project('safedrive-ai'),
+        ],
       },
       { name: 'C++' },
-      { name: 'SQL', usedIn: [project('cloudguard'), project('safedrive-ai')] },
-      { name: 'FastAPI', usedIn: [project('auditai'), project('cloudguard'), project('safedrive-ai')] },
+      { name: 'SQL', usedIn: [project('attacksimulator'), project('cloudguard'), project('safedrive-ai')] },
+      {
+        name: 'FastAPI',
+        usedIn: [project('auditai'), project('attacksimulator'), project('cloudguard'), project('safedrive-ai')],
+      },
       { name: 'Flask', usedIn: [project('cyberguard')] },
       {
         name: 'REST APIs',
-        usedIn: [project('auditai'), project('cloudguard'), role('metis-intellisystems')],
+        usedIn: [project('auditai'), project('attacksimulator'), project('cloudguard'), role('metis-intellisystems')],
       },
-      { name: 'WebSockets' },
+      { name: 'WebSockets', usedIn: [project('attacksimulator')] },
     ],
   },
   {
@@ -59,8 +71,11 @@ export const SKILL_GROUPS: readonly SkillGroup[] = [
     title: 'Frontend',
     summary: 'Interfaces that make AI and security output usable.',
     skills: [
-      { name: 'React', usedIn: [project('auditai'), project('cloudguard'), project('safedrive-ai')] },
-      { name: 'TypeScript', usedIn: [project('safedrive-ai'), project('cloudguard')] },
+      {
+        name: 'React',
+        usedIn: [project('auditai'), project('attacksimulator'), project('cloudguard'), project('safedrive-ai')],
+      },
+      { name: 'TypeScript', usedIn: [project('safedrive-ai'), project('attacksimulator'), project('cloudguard')] },
       { name: 'Responsive web development' },
     ],
   },
@@ -82,7 +97,7 @@ export const SKILL_GROUPS: readonly SkillGroup[] = [
     title: 'Data',
     summary: 'Relational storage and vector search.',
     skills: [
-      { name: 'PostgreSQL', usedIn: [project('cloudguard'), project('safedrive-ai')] },
+      { name: 'PostgreSQL', usedIn: [project('attacksimulator'), project('cloudguard'), project('safedrive-ai')] },
       { name: 'MySQL' },
       { name: 'Vector database concepts', usedIn: [project('cyberguard'), project('auditai')] },
     ],
@@ -96,6 +111,7 @@ export const SKILL_GROUPS: readonly SkillGroup[] = [
       { name: 'IAM', usedIn: [project('cloudguard')] },
       { name: 'Threat detection', usedIn: [project('cyberguard')] },
       { name: 'Incident response', usedIn: [project('cyberguard')] },
+      { name: 'Phishing simulation & awareness', usedIn: [project('attacksimulator')] },
       { name: 'OWASP Top 10' },
       { name: 'Cloud security monitoring', usedIn: [project('cloudguard')] },
     ],

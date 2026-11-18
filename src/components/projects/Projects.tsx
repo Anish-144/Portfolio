@@ -20,7 +20,7 @@ export function Projects() {
           label="Projects"
           title="Selected systems."
           titleId="projects-title"
-          intro="Four builds across agentic AI, retrieval-augmented generation, cloud security, and voice-driven learning, each scoped as a complete system from data to interface."
+          intro="Five builds across agentic AI, retrieval-augmented generation, phishing simulation, cloud security, and voice-driven learning, each scoped as a complete system from data to interface."
         />
 
         <div className="projects__list">

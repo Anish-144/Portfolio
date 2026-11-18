@@ -588,6 +588,190 @@ function ThreatIllustration({ layout }: { layout: IllustrationLayout }) {
   );
 }
 
+/* -------------------------------------------------------- AttackSimulator */
+
+/** Delivery channels with lure types each one actually allows (the platform's channel map). */
+const CHANNELS: Array<{ name: string; lures: [string, string]; short: string }> = [
+  { name: 'Email', lures: ['Spear · QR · BEC', 'Whaling · harvest'], short: 'QR · BEC' },
+  { name: 'SMS · Twilio', lures: ['OTP scam', 'Delivery · bank alert'], short: 'OTP scam' },
+  { name: 'WhatsApp · Twilio', lures: ['Fake support', 'Payment request'], short: 'Payment scam' },
+];
+/** Tracked event types, in funnel order; proportions are illustrative. The last is the behaviour training rewards. */
+const FUNNEL: Array<[string, number]> = [
+  ['Sent', 1],
+  ['Opened', 0.72],
+  ['Clicked', 0.44],
+  ['Credential attempt', 0.21],
+  ['Downloaded', 0.12],
+  ['Reported', 0.34],
+];
+/** Event names as the platform logs them; the credential attempt is the one that matters. */
+const FEED = ['LINK_CLICK', 'CREDENTIAL_ATTEMPT', 'FILE_DOWNLOAD', 'EMAIL_REPORTED', 'EMAIL_OPEN'];
+const CREDENTIAL = 1;
+/** The risk engine's weights. */
+const WEIGHTS = ['Click ×20 · Credential ×40', 'Download ×30 · Report −15'];
+
+function FeedRow({ x, y, event, index, width }: { x: number; y: number; event: string; index: number; width: number }) {
+  const credential = index === CREDENTIAL;
+  return (
+    <g className={`v-pop${credential ? ' v-blink' : ''}`} style={delay(0.7 + index * 0.12)}>
+      <rect x={x} y={y - 7} width={8} height={8} className={credential ? 'v-fill-amber' : 'v-fill-mid'} />
+      <Label x={x + 16} y={y + 1} strong={credential} small>
+        {event}
+      </Label>
+      {/* Simulated credential pages log that an attempt happened, never the password. */}
+      {credential ? (
+        <Label x={x + width} y={y + 1} anchor="end" small>
+          Attempt only
+        </Label>
+      ) : (
+        <rect x={x + width - 64} y={y - 3} width={64 - index * 6} height={2} className="v-fill-dim" />
+      )}
+    </g>
+  );
+}
+
+function PhishingIllustration({ layout }: { layout: IllustrationLayout }) {
+  const label =
+    'Diagram: a phishing campaign goes out over email (spear, QR and business-email-compromise lures), SMS and WhatsApp. An event funnel tracks sends, opens, clicks, credential attempts, downloads and reports. A live WebSocket feed lists events as they arrive, credential attempts are logged without storing the password, and a risk score weights clicks, credential attempts and downloads and credits reports.';
+
+  if (layout === 'compact') {
+    return (
+      <svg viewBox="0 0 360 480" role="img" aria-label={label}>
+        <Label x={16} y={26}>
+          Campaign · 3 channels
+        </Label>
+        {CHANNELS.map(({ name, short }, index) => {
+          const x = 16 + index * 112;
+          return (
+            <g key={name}>
+              <g className="v-pop" style={delay(index * 0.08)}>
+                <rect x={x} y={38} width={104} height={46} rx={2} className={`v-node${index === 0 ? ' v-node--active' : ''}`} />
+                <Label x={x + 52} y={57} anchor="middle" strong small>
+                  {name.split(' · ')[0]}
+                </Label>
+                <Label x={x + 52} y={73} anchor="middle" small>
+                  {short}
+                </Label>
+              </g>
+              <Link path={`M${x + 52} 84 V 104`} d={0.3 + index * 0.08} />
+            </g>
+          );
+        })}
+
+        <g className="v-pop" style={delay(0.4)}>
+          <rect x={16} y={104} width={328} height={170} rx={2} className="v-panel" />
+          <Label x={28} y={124} strong small>
+            Event funnel
+          </Label>
+        </g>
+        {FUNNEL.map(([event, share], index) => {
+          const y = 136 + index * 23;
+          return (
+            <g key={event}>
+              <Label x={28} y={y + 8} small>
+                {event === 'Credential attempt' ? 'Credentials' : event}
+              </Label>
+              <Bar x={120} y={y} width={212} value={share} accent={index === FUNNEL.length - 1} d={0.5 + index * 0.08} />
+            </g>
+          );
+        })}
+
+        <g className="v-pop" style={delay(0.6)}>
+          <rect x={16} y={286} width={328} height={184} rx={2} className="v-panel" />
+          <Label x={28} y={306} strong small>
+            Live feed · WebSocket
+          </Label>
+        </g>
+        {FEED.slice(0, 3).map((event, index) => (
+          <FeedRow key={event} x={28} y={326 + index * 18} event={event} index={index} width={304} />
+        ))}
+        <Label x={28} y={392} strong small>
+          Risk score
+        </Label>
+        <Bar x={106} y={385} width={226} value={0.68} accent d={1.1} />
+        {WEIGHTS.map((weights, index) => (
+          <Label key={weights} x={28} y={422 + index * 16} small>
+            {weights}
+          </Label>
+        ))}
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 640 440" role="img" aria-label={label}>
+      <Label x={20} y={40}>
+        Campaign · 3 channels
+      </Label>
+      <Swatch x={452} y={40} />
+      <Label x={620} y={40} anchor="end">
+        LLM-written lures
+      </Label>
+      {CHANNELS.map(({ name, lures }, index) => {
+        const x = 20 + index * 208;
+        return (
+          <g key={name}>
+            <g className="v-pop" style={delay(index * 0.08)}>
+              <rect x={x} y={58} width={184} height={62} rx={2} className={`v-node${index === 0 ? ' v-node--active' : ''}`} />
+              <Label x={x + 14} y={78} strong small>
+                {name}
+              </Label>
+              {lures.map((lure, line) => (
+                <Label key={lure} x={x + 14} y={95 + line * 15} small>
+                  {lure}
+                </Label>
+              ))}
+            </g>
+            <Link path={`M${x + 92} 120 V 166`} d={0.3 + index * 0.08} />
+          </g>
+        );
+      })}
+
+      <g className="v-pop" style={delay(0.4)}>
+        <rect x={20} y={166} width={294} height={254} rx={2} className="v-panel" />
+        <Label x={32} y={188} strong small>
+          Event funnel
+        </Label>
+        <Label x={302} y={188} anchor="end" small>
+          Per campaign
+        </Label>
+      </g>
+      {FUNNEL.map(([event, share], index) => {
+        const y = 208 + index * 34;
+        return (
+          <g key={event}>
+            <Label x={32} y={y} small>
+              {event}
+            </Label>
+            <Bar x={32} y={y + 8} width={270} value={share} accent={index === FUNNEL.length - 1} d={0.5 + index * 0.08} />
+          </g>
+        );
+      })}
+
+      <g className="v-pop" style={delay(0.6)}>
+        <rect x={326} y={166} width={294} height={254} rx={2} className="v-panel" />
+        <Label x={338} y={188} strong small>
+          Live feed · WebSocket
+        </Label>
+      </g>
+      {FEED.map((event, index) => (
+        <FeedRow key={event} x={338} y={212 + index * 22} event={event} index={index} width={270} />
+      ))}
+      <line x1={338} y1={320} x2={608} y2={320} className="v-line" />
+      <Label x={338} y={344} strong small>
+        Risk score
+      </Label>
+      <Bar x={338} y={354} width={270} value={0.68} accent d={1.1} />
+      {WEIGHTS.map((weights, index) => (
+        <Label key={weights} x={338} y={388 + index * 16} small>
+          {weights}
+        </Label>
+      ))}
+    </svg>
+  );
+}
+
 /* ------------------------------------------------------------- CloudGuard */
 
 /** Real checks from the implementation, tagged by where they live (compliance rule vs. collector check). */
@@ -910,6 +1094,7 @@ function LearningIllustration({ layout }: { layout: IllustrationLayout }) {
 const ILLUSTRATIONS: Record<VisualKind, (props: { layout: IllustrationLayout }) => ReactNode> = {
   audit: AuditIllustration,
   threat: ThreatIllustration,
+  phishing: PhishingIllustration,
   cloud: CloudIllustration,
   learning: LearningIllustration,
 };

@@ -4,8 +4,8 @@
  * each project's implementation supports.
  */
 
-export type ProjectId = 'auditai' | 'cyberguard' | 'cloudguard' | 'safedrive-ai';
-export type VisualKind = 'audit' | 'threat' | 'cloud' | 'learning';
+export type ProjectId = 'auditai' | 'cyberguard' | 'attacksimulator' | 'cloudguard' | 'safedrive-ai';
+export type VisualKind = 'audit' | 'threat' | 'phishing' | 'cloud' | 'learning';
 
 export interface Metric {
   value: string;
@@ -220,8 +220,92 @@ export const PROJECTS: readonly Project[] = [
     },
   },
   {
-    id: 'cloudguard',
+    id: 'attacksimulator',
     index: 'P/03',
+    name: 'AttackSimulator',
+    tagline: 'Multi-Channel Phishing & Security Awareness Platform',
+    category: 'Security awareness · Full-stack',
+    summary:
+      'A phishing-simulation platform for security-awareness training. It runs email, SMS and WhatsApp campaigns with AI-generated lures, tracks how each employee responds in real time, scores their risk, and turns mistakes into training.',
+    stack: ['Python', 'FastAPI', 'SQLAlchemy', 'PostgreSQL', 'React', 'TypeScript', 'WebSockets', 'JWT', 'Twilio', 'LLM APIs'],
+    visual: 'phishing',
+    figure: 'Campaign telemetry',
+    metrics: [
+      { value: '3', label: 'Delivery channels: email, SMS, WhatsApp' },
+      { value: '15', label: 'Attack scenarios, from QR phishing to BEC' },
+      { value: '50+', label: 'REST endpoints, plus a live WebSocket feed' },
+    ],
+    context: 'Team build',
+    links: {
+      repository: { label: 'Team repository', href: 'https://github.com/TAPAN-2835/AttackSimulator_AlphaCore' },
+    },
+    caseStudy: {
+      problem:
+        'Most breaches start with a person, not a server: a convincing email, a text about a parcel, a WhatsApp message from “support”. Awareness training is often a slide deck. Organisations need to see how their people respond to realistic lures, safely, and to teach them at the moment they slip.',
+      architecture: {
+        summary:
+          'A React and TypeScript dashboard talks to a FastAPI backend over REST and a WebSocket. Campaigns target employees imported from CSV and go out by email, or by SMS and WhatsApp through Twilio, with the lure written by an LLM for the chosen scenario, difficulty, department, and tone. Every interaction (an open, a click, a credential attempt, a download, a report) is logged as an event, streamed live to the dashboard, and folded into a per-employee risk score. Data lives in PostgreSQL through async SQLAlchemy, with Alembic migrations.',
+        steps: [
+          { label: 'Target', detail: 'Employees imported from CSV' },
+          { label: 'Generate', detail: 'LLM-written lure per scenario and tone' },
+          { label: 'Deliver', detail: 'Email, SMS and WhatsApp (Twilio)' },
+          { label: 'Track', detail: 'Events streamed live over a WebSocket' },
+          { label: 'Score + train', detail: 'Risk scores, drills, training pages' },
+        ],
+      },
+      features: [
+        'Campaigns over email, SMS, and WhatsApp, with channel-aware validation that rejects combinations that make no sense, such as a QR-code lure by SMS',
+        'Fifteen attack scenarios, including spear phishing, QR phishing, business email compromise, whaling, credential harvesting, malware downloads, and OTP, delivery, and payment-request scams',
+        'AI-generated lures tailored to scenario, difficulty, department, and tone, with a choice of OpenAI, Claude, Gemini, or Groq',
+        'Simulated credential-harvest pages that log only that an attempt happened, never the password',
+        'Real-time tracking of opens, clicks, credential attempts, downloads, and reports, streamed to a live dashboard',
+        'Per-employee risk scores and analytics by channel',
+        'Employee reporting, with reported links checked against VirusTotal when configured',
+        'AI-generated response drills across twenty awareness topics, from tailgating to deepfake calls',
+        'A Chrome extension that shows employees their own security score and warns on lookalike domains and on password forms served over plain HTTP',
+      ],
+      technology: [
+        {
+          name: 'FastAPI + async SQLAlchemy',
+          reason: 'An async API over PostgreSQL, with Alembic migrations and SQLite for local development.',
+        },
+        { name: 'WebSockets', reason: 'Pushes each tracked event to the dashboard the moment it is logged.' },
+        { name: 'Twilio', reason: 'SMS and WhatsApp delivery for campaigns beyond email.' },
+        {
+          name: 'LLM APIs',
+          reason: 'Lures and drills come from a provider factory, so OpenAI, Claude, Gemini, or Groq can be chosen per request.',
+        },
+        { name: 'JWT + bcrypt', reason: 'Token authentication with hashed passwords for the admin and employee views.' },
+        { name: 'React + TypeScript', reason: 'Admin and employee dashboards, built with Tailwind and shadcn/ui.' },
+      ],
+      challenges: [
+        {
+          title: 'Realistic, never harmful',
+          detail:
+            'A simulated credential page records that an attempt happened and nothing else: the password is never stored. The exercise teaches without collecting anything a real attacker would want.',
+        },
+        {
+          title: 'Channel-aware attacks',
+          detail:
+            'Not every attack fits every channel. A validation map ties each scenario to the channels where it is realistic, so campaigns cannot be configured into combinations no attacker would use.',
+        },
+        {
+          title: 'Measuring improvement, not just failure',
+          detail:
+            'The risk score weights a credential attempt above a click and credits employees who report a lure, so it rewards the behaviour the training is trying to build.',
+        },
+      ],
+      results: [
+        'Campaigns across three channels and fifteen attack scenarios',
+        'More than fifty REST endpoints and a live WebSocket event feed',
+        'A Chrome extension that brings each employee’s score and phishing warnings into the browser',
+        'Built in a team of five; my work included the channel-aware attack types, the employee directory, response drills, message templates, SMS delivery, and the credential-harvest pages',
+      ],
+    },
+  },
+  {
+    id: 'cloudguard',
+    index: 'P/04',
     name: 'CloudGuard',
     tagline: 'Cloud Security Monitoring & IAM Risk Analysis',
     category: 'Cloud security · Governance',
@@ -293,7 +377,7 @@ export const PROJECTS: readonly Project[] = [
   },
   {
     id: 'safedrive-ai',
-    index: 'P/04',
+    index: 'P/05',
     name: 'SafeDrive AI',
     tagline: 'AI-Powered Distracted-Driving Awareness Platform',
     category: 'Full-stack · Voice AI · Learning',
